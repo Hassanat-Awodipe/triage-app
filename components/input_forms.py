@@ -23,8 +23,8 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col1:
             patient_data['age'] = st.number_input(
                 "Age (years)",
-                min_value=0,
-                max_value=120,
+                min_value=18,
+                max_value=80,
                 value=None,
                 help="Patient's age in years"
             )
@@ -32,7 +32,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col2:
             patient_data['sex'] = st.selectbox(
                 "Sex",
-                options=["", "Male", "Female"],
+                options=["Male", "Female"],
                 index=0,
                 help="Patient's gender"
             )
@@ -44,7 +44,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col1:
             patient_data['active_bleeding'] = st.selectbox(
                 "Active Bleeding",
-                options=["", "Yes", "No"],
+                options=["Yes", "No"],
                 index=0,
                 help="Is the patient actively bleeding?"
             )
@@ -52,7 +52,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col2:
             patient_data['pregnancy'] = st.selectbox(
                 "Pregnancy",
-                options=["", "Yes", "No"],
+                options=["Yes", "No"],
                 index=0,
                 help="Is the patient pregnant? (if applicable)"
             )
@@ -64,7 +64,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col1:
             patient_data['mode_of_arrival'] = st.selectbox(
                 "Mode of Arrival",
-                options=["", "Ambulance", "Walk-in", "Police", "Private Vehicle", "Air Transport"],
+                options=["", "Ambulance", "Walk-in", "Private Vehicle"],
                 index=0,
                 help="How did the patient arrive at the facility?"
             )
@@ -72,8 +72,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col2:
             patient_data['chief_complaint'] = st.selectbox(
                 "Chief Complaint",
-                options=["", "Chest Pain", "Shortness of Breath", "Abdominal Pain", 
-                        "Headache", "Nausea/Vomiting", "Fever", "Trauma", "Other"],
+                options=["Chest Pain", "Difficulty Breathing", "Headache", "Vomiting or Diarrhea", "Fever", "Injury", "Pregnancy-related Complication", "Psychiatric/behavioral Emergency", "Seizure or Loss of Consciousness", "weakness_or_fatigue", "Other"],
                 index=0,
                 help="Primary reason for the visit"
             )
@@ -88,8 +87,8 @@ def render_patient_input_form() -> Dict[str, Any]:
             temp_range = vital_ranges['temperature']['normal']
             patient_data['temperature'] = st.number_input(
                 f"Temperature (°C) - Normal: {temp_range[0]}-{temp_range[1]}°C",
-                min_value=30.0,
-                max_value=45.0,
+                min_value=36.0,
+                max_value=39.0,
                 value=None,
                 step=0.1,
                 help="Body temperature in Celsius"
@@ -98,8 +97,8 @@ def render_patient_input_form() -> Dict[str, Any]:
             hr_range = vital_ranges['heart_rate']['normal']
             patient_data['heart_rate'] = st.number_input(
                 f"Heart Rate (bpm) - Normal: {hr_range[0]}-{hr_range[1]} bpm",
-                min_value=30,
-                max_value=200,
+                min_value=60,
+                max_value=116,
                 value=None,
                 help="Heart rate in beats per minute"
             )
@@ -107,8 +106,8 @@ def render_patient_input_form() -> Dict[str, Any]:
             rr_range = vital_ranges['respiratory_rate']['normal']
             patient_data['resp_rate'] = st.number_input(
                 f"Respiratory Rate (breaths/min) - Normal: {rr_range[0]}-{rr_range[1]} /min",
-                min_value=5,
-                max_value=50,
+                min_value=12,
+                max_value=27,
                 value=None,
                 help="Breathing rate per minute"
             )
@@ -122,8 +121,8 @@ def render_patient_input_form() -> Dict[str, Any]:
                 sbp_range = vital_ranges['blood_pressure_systolic']['normal']
                 patient_data['systolic_bp'] = st.number_input(
                     f"Systolic (Normal: {sbp_range[0]}-{sbp_range[1]})",
-                    min_value=60,
-                    max_value=250,
+                    min_value=104,
+                    max_value=154,
                     value=None,
                     help="Systolic blood pressure"
                 )
@@ -132,8 +131,8 @@ def render_patient_input_form() -> Dict[str, Any]:
                 dbp_range = vital_ranges['blood_pressure_diastolic']['normal']
                 patient_data['diastolic_bp'] = st.number_input(
                     f"Diastolic (Normal: {dbp_range[0]}-{dbp_range[1]})",
-                    min_value=30,
-                    max_value=150,
+                    min_value=62,
+                    max_value=103,
                     value=None,
                     help="Diastolic blood pressure"
                 )
@@ -141,7 +140,7 @@ def render_patient_input_form() -> Dict[str, Any]:
             spo2_range = vital_ranges['oxygen_saturation']['normal']
             patient_data['oxygen_sat'] = st.number_input(
                 f"Oxygen Saturation (%) - Normal: {spo2_range[0]}-{spo2_range[1]}%",
-                min_value=50,
+                min_value=81,
                 max_value=100,
                 value=None,
                 help="Blood oxygen saturation percentage"
@@ -156,14 +155,14 @@ def render_patient_input_form() -> Dict[str, Any]:
             help="Patient's level of consciousness using AVPU scale"
         )
     
-    # Triage Category (if known/for training purposes)
-    with st.expander("🏥 Triage Information", expanded=False):
-        patient_data['Triage_Category'] = st.selectbox(
-            "Triage Category (if known)",
-            options=["", "0", "1", "2"],
-            index=0,
-            help="Assigned triage category (0=Critical, 1=Urgent, 2=Non-urgent)"
-        )
+    # # Triage Category (if known/for training purposes)
+    # with st.expander("🏥 Triage Information", expanded=False):
+    #     patient_data['Triage_Category'] = st.selectbox(
+    #         "Triage Category (if known)",
+    #         options=["", "0", "1", "2"],
+    #         index=0,
+    #         help="Assigned triage category (0=Critical, 1=Urgent, 2=Non-urgent)"
+    #     )
     
     return patient_data
 
@@ -214,7 +213,7 @@ def render_quick_entry_buttons():
             }
     
     with col3:
-        if st.button("🩸 Trauma Case"):
+        if st.button("🩸 Injury Case"):
             return {
                 'age': 28,
                 'sex': 'Male',
@@ -227,7 +226,7 @@ def render_quick_entry_buttons():
                 'oxygen_sat': 92,
                 'pregnancy': 'No',
                 'mode_of_arrival': 'Ambulance',
-                'chief_complaint': 'Trauma',
+                'chief_complaint': 'Injury',
                 'AVPU_scale': 'Voice',
                 'Triage_Category': '0'
             }
