@@ -78,7 +78,7 @@ class TriageModel:
         
         # Extract numeric features in order
         features.append(patient_data.get('age', 0))
-        features.append(1 if patient_data.get('sex', 'Female') == 'Male' else 0)
+        features.append(1 if patient_data.get('sex', 'Male') == 'Female' else 0)
         features.append(1 if patient_data.get('active_bleeding', 'No') == 'Yes' else 0)
         features.append(patient_data.get('resp_rate', 16))
         features.append(patient_data.get('heart_rate', 80))
