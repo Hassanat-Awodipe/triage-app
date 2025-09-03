@@ -64,7 +64,8 @@ class TriageModel:
         """
         return [
             'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
-               'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy', 'mode_of_arrival', 'chief_complaint', 'AVPU_scale', 'Triage_Category'
+            'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy',
+            'mode_of_arrival', 'chief_complaint', 'AVPU_scale', 'Triage_Category'
         ]
     
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
@@ -75,33 +76,23 @@ class TriageModel:
         """
         features = []
         
-        # Extract numeric features
+        # Extract numeric features in order
         features.append(patient_data.get('age', 0))
+        features.append(1 if patient_data.get('sex', 'Female') == 'Male' else 0)
+        features.append(1 if patient_data.get('active_bleeding', 'No') == 'Yes' else 0)
         features.append(patient_data.get('resp_rate', 16))
         features.append(patient_data.get('heart_rate', 80))
         features.append(patient_data.get('systolic_bp', 120))
         features.append(patient_data.get('diastolic_bp', 80))
         features.append(patient_data.get('temperature', 37.0))
         features.append(patient_data.get('oxygen_sat', 98))
-
-
-        # Extract categorical features
-
-        # Convert binary features to numeric 
-        features.append(1 if patient_data.get('sex', 'Female') else 0)
-        features.append(1 if patient_data.get('active_bleeding', 'Yes') else 0)
-        features.append(1 if patient_data.get('pregnancy', 'Yes') else 0)
-
-        # create dummy variables for categorical features
-        features.append(patient_data.get('mode_of_arrival', 'Ambulance'))
-        features.append(patient_data.get('AVPU_scale', 'Alert'))
-        features.append(patient_data.get('chief_complaint', 'Chest Pain'))
+        features.append(1 if patient_data.get('pregnancy', 'No') == 'Yes' else 0)
 
         # Create dummy variables for categorical features
         categorical_data = {
             'mode_of_arrival': patient_data.get('mode_of_arrival', 'Ambulance'),
-            'AVPU_scale': patient_data.get('AVPU_scale', 'Alert'),
-            'chief_complaint': patient_data.get('chief_complaint', 'Chest Pain')
+            'chief_complaint': patient_data.get('chief_complaint', 'Chest Pain'),
+            'AVPU_scale': patient_data.get('AVPU_scale', 'Alert')
         }
 
         # Convert to DataFrame for dummy encoding
@@ -112,16 +103,18 @@ class TriageModel:
         for col in dummy_df.columns:
             features.append(dummy_df[col].iloc[0])
 
+        # Add Triage_Category (this would typically be the target variable during training)
+        features.append(patient_data.get('Triage_Category', 0))
+
         # Convert to DataFrame with proper column names
         numeric_feature_names = [
-            'age', 'resp_rate', 'heart_rate', 'systolic_bp', 'diastolic_bp', 
-            'temperature', 'oxygen_sat', 'sex', 'active_bleeding', 'pregnancy'
+            'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
+            'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy'
         ]
-        all_feature_names = numeric_feature_names + dummy_df.columns
+        categorical_feature_names = list(dummy_df.columns)
+        all_feature_names = numeric_feature_names + categorical_feature_names + ['Triage_Category']
 
         return pd.DataFrame([features], columns=all_feature_names)
-
-        # return pd.DataFrame(features)
     
     # def _mock_prediction(self, features: np.ndarray) -> Dict[str, Any]:
     #     """
