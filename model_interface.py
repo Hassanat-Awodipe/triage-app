@@ -1,0 +1,226 @@
+"""
+Medical Triage Model Interface
+
+This module provides the interface for integrating your existing triage classification model.
+Replace the MockTriageModel with your actual trained model.
+"""
+
+import numpy as np
+import pandas as pd
+from typing import Dict, Any, List
+import joblib
+import os
+
+class TriageModel:
+    """
+    Interface for the triage classification model.
+    
+    IMPORTANT: Replace this with your actual trained model.
+    This is a template that shows the expected interface.
+    """
+    
+    def __init__(self):
+        """
+        Initialize the triage model.
+        
+        TODO: Replace this with your actual model loading code.
+        Example:
+        - self.model = joblib.load('path/to/your/model.pkl')
+        - self.scaler = joblib.load('path/to/your/scaler.pkl')
+        - self.feature_names = ['age', 'temperature', 'heart_rate', ...]
+        """
+        self.model = None  # Your trained model goes here
+        self.scaler = None  # Your feature scaler goes here
+        self.feature_names = self._get_expected_features()
+        self.triage_categories = {
+            1: {'name': 'Critical', 'color': '#FF4B4B', 'description': 'Immediate attention required'},
+            2: {'name': 'Urgent', 'color': '#FF8C00', 'description': 'Treatment within 30 minutes'},
+            3: {'name': 'Semi-urgent', 'color': '#FFD700', 'description': 'Treatment within 2 hours'},
+            4: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment within 4 hours'},
+            5: {'name': 'Low priority', 'color': '#E0E0E0', 'description': 'Treatment when convenient'}
+        }
+        
+        # Try to load actual model if it exists
+        self._try_load_model()
+    
+    def _try_load_model(self):
+        """
+        Attempt to load your actual model from common paths.
+        Add your model loading logic here.
+        """
+        possible_paths = [
+            'model/triage_model.pkl',
+            'models/triage_classifier.pkl',
+            'triage_model.pkl',
+            'model.pkl'
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                try:
+                    self.model = joblib.load(path)
+                    print(f"✅ Loaded model from {path}")
+                    break
+                except Exception as e:
+                    print(f"❌ Failed to load model from {path}: {e}")
+    
+    def _get_expected_features(self) -> List[str]:
+        """
+        Define the expected feature names for your model.
+        
+        TODO: Replace this with your actual feature names.
+        """
+        return [
+            'age', 'temperature', 'heart_rate', 'blood_pressure_systolic',
+            'blood_pressure_diastolic', 'respiratory_rate', 'oxygen_saturation',
+            'pain_level', 'consciousness_level', 'chest_pain', 'difficulty_breathing',
+            'severe_bleeding', 'head_injury', 'abdominal_pain', 'fever',
+            'nausea_vomiting', 'dizziness', 'allergic_reaction'
+        ]
+    
+    def _prepare_features(self, patient_data: Dict[str, Any]) -> np.ndarray:
+        """
+        Convert patient data to model features.
+        
+        TODO: Implement your actual feature engineering logic here.
+        """
+        features = []
+        
+        # Extract numeric features
+        features.append(patient_data.get('age', 0))
+        features.append(patient_data.get('temperature', 37.0))
+        features.append(patient_data.get('heart_rate', 80))
+        features.append(patient_data.get('blood_pressure_systolic', 120))
+        features.append(patient_data.get('blood_pressure_diastolic', 80))
+        features.append(patient_data.get('respiratory_rate', 16))
+        features.append(patient_data.get('oxygen_saturation', 98))
+        features.append(patient_data.get('pain_level', 0))
+        
+        # Map consciousness level to numeric
+        consciousness_mapping = {
+            'Alert': 4, 'Confused': 3, 'Drowsy': 2, 
+            'Responds to voice': 1, 'Unresponsive': 0
+        }
+        features.append(consciousness_mapping.get(patient_data.get('consciousness_level', 'Alert'), 4))
+        
+        # Convert symptoms to binary features
+        symptoms = patient_data.get('symptoms', [])
+        symptom_features = [
+            'chest_pain', 'difficulty_breathing', 'severe_bleeding',
+            'head_injury', 'abdominal_pain', 'fever', 'nausea_vomiting',
+            'dizziness', 'allergic_reaction'
+        ]
+        
+        for symptom in symptom_features:
+            features.append(1 if symptom in symptoms else 0)
+        
+        return np.array(features).reshape(1, -1)
+    
+    def _mock_prediction(self, features: np.ndarray) -> Dict[str, Any]:
+        """
+        Mock prediction for demonstration purposes.
+        
+        TODO: Remove this when you integrate your actual model.
+        """
+        # Simple rule-based mock logic for demonstration
+        age = features[0, 0]
+        temperature = features[0, 1]
+        heart_rate = features[0, 2]
+        bp_systolic = features[0, 3]
+        oxygen_sat = features[0, 6]
+        pain_level = features[0, 7]
+        consciousness = features[0, 8]
+        
+        # Count critical symptoms (last 9 features are symptoms)
+        critical_symptoms = np.sum(features[0, 9:])
+        
+        # Mock triage logic
+        if (consciousness <= 1 or oxygen_sat < 90 or bp_systolic > 180 or 
+            temperature > 40 or critical_symptoms >= 3):
+            triage_level = 1
+            confidence = 0.95
+        elif (pain_level >= 8 or heart_rate > 120 or temperature > 38.5 or 
+              critical_symptoms >= 2):
+            triage_level = 2
+            confidence = 0.85
+        elif (pain_level >= 5 or heart_rate > 100 or temperature > 38 or 
+              critical_symptoms >= 1):
+            triage_level = 3
+            confidence = 0.75
+        elif pain_level >= 3 or age > 65:
+            triage_level = 4
+            confidence = 0.70
+        else:
+            triage_level = 5
+            confidence = 0.80
+        
+        # Generate mock confidence scores for all categories
+        confidence_scores = np.random.dirichlet([1] * 5)
+        confidence_scores[triage_level - 1] = confidence
+        confidence_scores = confidence_scores / confidence_scores.sum()
+        
+        return {
+            'triage_level': int(triage_level),
+            'confidence': float(confidence),
+            'confidence_scores': confidence_scores.tolist(),
+            'category': self.triage_categories[triage_level]['name'],
+            'color': self.triage_categories[triage_level]['color'],
+            'description': self.triage_categories[triage_level]['description']
+        }
+    
+    def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Make triage prediction for a patient.
+        
+        Args:
+            patient_data: Dictionary containing patient information
+            
+        Returns:
+            Dictionary containing prediction results
+        """
+        try:
+            # Prepare features
+            features = self._prepare_features(patient_data)
+            
+            if self.model is not None:
+                # TODO: Use your actual model here
+                # Example:
+                # if self.scaler:
+                #     features = self.scaler.transform(features)
+                # prediction = self.model.predict(features)[0]
+                # probabilities = self.model.predict_proba(features)[0]
+                # confidence = np.max(probabilities)
+                
+                # For now, use mock prediction
+                return self._mock_prediction(features)
+            else:
+                # Use mock prediction when no actual model is loaded
+                print("⚠️ No trained model found. Using mock prediction for demonstration.")
+                return self._mock_prediction(features)
+                
+        except Exception as e:
+            raise Exception(f"Prediction failed: {str(e)}")
+    
+    def get_feature_importance(self) -> Dict[str, float]:
+        """
+        Get feature importance scores from the model.
+        
+        TODO: Implement this based on your model type.
+        """
+        if hasattr(self.model, 'feature_importances_'):
+            importance_dict = dict(zip(self.feature_names, self.model.feature_importances_))
+            return importance_dict
+        else:
+            # Return mock importance for demonstration
+            return {feature: np.random.random() for feature in self.feature_names}
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get information about the loaded model.
+        """
+        return {
+            'model_type': type(self.model).__name__ if self.model else 'Mock Model',
+            'feature_count': len(self.feature_names),
+            'categories': list(self.triage_categories.values()),
+            'is_mock': self.model is None
+        }
