@@ -64,10 +64,10 @@ class TriageModel:
         """
         return [
             'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
-               'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy', 'mode_of_arrival', 'chief_complaint', 'AVPU', 'Triage_Category'
+               'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy', 'mode_of_arrival', 'chief_complaint', 'AVPU_scale', 'Triage_Category'
         ]
     
-    def _prepare_features(self, patient_data: Dict[str, Any]) -> np.ndarray:
+    def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
         """
         Convert patient data to model features.
         
@@ -77,33 +77,29 @@ class TriageModel:
         
         # Extract numeric features
         features.append(patient_data.get('age', 0))
-        features.append(patient_data.get('temperature', 37.0))
+        features.append(patient_data.get('resp_rate', 16))
         features.append(patient_data.get('heart_rate', 80))
-        features.append(patient_data.get('blood_pressure_systolic', 120))
-        features.append(patient_data.get('blood_pressure_diastolic', 80))
-        features.append(patient_data.get('respiratory_rate', 16))
-        features.append(patient_data.get('oxygen_saturation', 98))
-        features.append(patient_data.get('pain_level', 0))
+        features.append(patient_data.get('systolic_bp', 120))
+        features.append(patient_data.get('diastolic_bp', 80))
+        features.append(patient_data.get('temperature', 37.0))
+        features.append(patient_data.get('oxygen_sat', 98))
+
+
+        # Extract categorical features
+
+        # Convert binary features to numeric 
+        features.append(1 if patient_data.get('sex', 'Female') else 0)
+        features.append(1 if patient_data.get('active_bleeding', 'Yes') else 0)
+        features.append(1 if patient_data.get('pregnancy', 'Yes') else 0)
+
+        # create dummy variables for categorical features
+        features.append(patient_data.get('mode_of_arrival', 'Ambulance'))
+        features.append(patient_data.get('AVPU_scale', 'Alert'))
+        features.append(patient_data.get('chief_complaint', 'Chest Pain'))
+
         
-        # Map consciousness level to numeric
-        consciousness_mapping = {
-            'Alert': 4, 'Confused': 3, 'Drowsy': 2, 
-            'Responds to voice': 1, 'Unresponsive': 0
-        }
-        features.append(consciousness_mapping.get(patient_data.get('consciousness_level', 'Alert'), 4))
-        
-        # Convert symptoms to binary features
-        symptoms = patient_data.get('symptoms', [])
-        symptom_features = [
-            'chest_pain', 'difficulty_breathing', 'severe_bleeding',
-            'head_injury', 'abdominal_pain', 'fever', 'nausea_vomiting',
-            'dizziness', 'allergic_reaction'
-        ]
-        
-        for symptom in symptom_features:
-            features.append(1 if symptom in symptoms else 0)
-        
-        return np.array(features).reshape(1, -1)
+
+        return pd.DataFrame(features)
     
     def _mock_prediction(self, features: np.ndarray) -> Dict[str, Any]:
         """
