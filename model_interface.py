@@ -65,7 +65,7 @@ class TriageModel:
         return [
             'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
             'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy',
-            'mode_of_arrival', 'chief_complaint', 'AVPU_scale', 'Triage_Category'
+            'mode_of_arrival', 'chief_complaint', 'AVPU_scale'
         ]
     
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
