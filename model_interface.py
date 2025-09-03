@@ -34,8 +34,8 @@ class TriageModel:
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
             0: {'name': 'Critical', 'color': '#FF4B4B', 'description': 'Immediate attention required'},
-            1: {'name': 'Urgent', 'color': '#FF8C00', 'description': 'Treatment within 2 hours'},
-            2: {'name': 'Non-urgent', 'color': '#E0E0E0', 'description': 'Treatment when convenient'},
+            1: {'name': 'Urgent', 'color': '#FF8C00', 'description': 'Treatment within 30 minutes'},
+            2: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment when convenient'},
         }
 
         # color codes: #32CD32, FFD700
@@ -129,19 +129,28 @@ class TriageModel:
             features = self._prepare_features(patient_data)
             
             if self.model is not None:
-                # TODO: Use your actual model here
-                # Example:
-                # if self.scaler:
-                #     features = self.scaler.transform(features)
+                # Use your actual trained model
                 prediction = self.model.predict(features)[0]
                 probabilities = self.model.predict_proba(features)[0]
                 confidence = np.max(probabilities)
                 
-                # For now, use mock prediction
-                return self.load_model(features)
+                # Get category info
+                category_info = self.triage_categories.get(prediction, {
+                    'name': 'Unknown',
+                    'color': '#808080',
+                    'description': 'Unknown category'
+                })
+                
+                return {
+                    'triage_level': int(prediction),
+                    'category': category_info['name'],
+                    'confidence': float(confidence),
+                    'confidence_scores': probabilities.tolist(),
+                    'description': category_info['description'],
+                    'color': category_info['color']
+                }
             else:
-                # Use mock prediction when no actual model is loaded
-                print("⚠️ No trained model found. Using mock prediction for demonstration.")
+                raise Exception("No trained model loaded. Please check triage_model.pkl file.")
                 
         except Exception as e:
             raise Exception(f"Prediction failed: {str(e)}")
