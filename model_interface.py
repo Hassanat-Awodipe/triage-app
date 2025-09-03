@@ -29,40 +29,32 @@ class TriageModel:
         - self.scaler = joblib.load('path/to/your/scaler.pkl')
         - self.feature_names = ['age', 'temperature', 'heart_rate', ...]
         """
-        self.model = None  # Your trained model goes here
-        self.scaler = None  # Your feature scaler goes here
+        self.model =  joblib.load('triage_model.pkl')
+        # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
-            1: {'name': 'Critical', 'color': '#FF4B4B', 'description': 'Immediate attention required'},
-            2: {'name': 'Urgent', 'color': '#FF8C00', 'description': 'Treatment within 30 minutes'},
-            3: {'name': 'Semi-urgent', 'color': '#FFD700', 'description': 'Treatment within 2 hours'},
-            4: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment within 4 hours'},
-            5: {'name': 'Low priority', 'color': '#E0E0E0', 'description': 'Treatment when convenient'}
+            0: {'name': 'Critical', 'color': '#FF4B4B', 'description': 'Immediate attention required'},
+            1: {'name': 'Urgent', 'color': '#FF8C00', 'description': 'Treatment within 2 hours'},
+            2: {'name': 'Non-urgent', 'color': '#E0E0E0', 'description': 'Treatment when convenient'},
         }
+
+        # color codes: #32CD32, FFD700
         
         # Try to load actual model if it exists
-        self._try_load_model()
+        self.load_model()
     
-    def _try_load_model(self):
+    def load_model(self):
         """
         Attempt to load your actual model from common paths.
         Add your model loading logic here.
         """
-        possible_paths = [
-            'model/triage_model.pkl',
-            'models/triage_classifier.pkl',
-            'triage_model.pkl',
-            'model.pkl'
-        ]
-        
-        for path in possible_paths:
-            if os.path.exists(path):
-                try:
-                    self.model = joblib.load(path)
-                    print(f"✅ Loaded model from {path}")
-                    break
-                except Exception as e:
-                    print(f"❌ Failed to load model from {path}: {e}")
+        path = 'model/triage_model.pkl'
+        if os.path.exists(path):
+            try:
+                self.model = joblib.load(path)
+                print(f"✅ Loaded model from {path}")
+            except Exception as e:
+                print(f"❌ Failed to load model from {path}: {e}")
     
     def _get_expected_features(self) -> List[str]:
         """
@@ -71,11 +63,8 @@ class TriageModel:
         TODO: Replace this with your actual feature names.
         """
         return [
-            'age', 'temperature', 'heart_rate', 'blood_pressure_systolic',
-            'blood_pressure_diastolic', 'respiratory_rate', 'oxygen_saturation',
-            'pain_level', 'consciousness_level', 'chest_pain', 'difficulty_breathing',
-            'severe_bleeding', 'head_injury', 'abdominal_pain', 'fever',
-            'nausea_vomiting', 'dizziness', 'allergic_reaction'
+            'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
+               'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy', 'mode_of_arrival', 'chief_complaint', 'AVPU', 'Triage_Category'
         ]
     
     def _prepare_features(self, patient_data: Dict[str, Any]) -> np.ndarray:
