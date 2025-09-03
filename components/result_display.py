@@ -236,116 +236,79 @@ def _get_recommendations(triage_level: int, patient_data: Dict[str, Any]) -> lis
         List of recommendation strings
     """
     base_recommendations = {
-        1: [
+        0: [
             "🚨 **IMMEDIATE INTERVENTION REQUIRED**",
             "Prepare for immediate medical assessment",
             "Consider advanced airway management if needed",
             "Establish IV access and monitor vitals continuously",
             "Prepare for potential emergency procedures"
         ],
-        2: [
-            "⚡ **URGENT CARE NEEDED**",
-            "Patient should be seen within 30 minutes",
-            "Monitor vital signs every 15 minutes",
-            "Prepare for diagnostic testing as needed",
-            "Consider pain management if appropriate"
-        ],
-        3: [
-            "⏰ **SEMI-URGENT ASSESSMENT**",
+        1: [
+            "⏰ **URGENT CARE NEEDED**",
             "Patient should be evaluated within 2 hours",
             "Monitor vital signs every 30 minutes",
             "Provide comfort measures as needed",
             "Reassess if condition changes"
         ],
-        4: [
-            "📋 **ROUTINE EVALUATION**",
-            "Patient can be seen within 4 hours",
-            "Monitor for any deterioration",
-            "Provide patient education as appropriate",
-            "Consider discharge planning if stable"
-        ],
-        5: [
+        2: [
             "📝 **LOW PRIORITY CARE**",
             "Patient can wait for convenient time slot",
+            "Monitor for any deterioration",
             "Basic comfort measures sufficient",
             "Patient education regarding condition",
-            "Consider self-care instructions"
+            
         ]
     }
     
     recommendations = base_recommendations.get(triage_level, [])
     
-    # Add specific recommendations based on patient condition
-    symptoms = patient_data.get('symptoms', [])
-    pain_level = patient_data.get('pain_level', 0)
-    consciousness = patient_data.get('consciousness_level', 'Alert')
-    
-    if 'chest_pain' in symptoms:
-        recommendations.append("💓 Obtain 12-lead ECG immediately")
-        recommendations.append("💓 Consider cardiac monitoring")
-    
-    if 'difficulty_breathing' in symptoms:
-        recommendations.append("🫁 Assess oxygen saturation continuously")
-        recommendations.append("🫁 Consider supplemental oxygen if needed")
-    
-    if 'severe_bleeding' in symptoms:
-        recommendations.append("🩸 Apply direct pressure to bleeding sites")
-        recommendations.append("🩸 Prepare for blood loss management")
-    
-    if consciousness != 'Alert':
-        recommendations.append("🧠 Neurological assessment required")
-        recommendations.append("🧠 Consider head CT if indicated")
-    
-    if pain_level >= 7:
-        recommendations.append("💊 Pain management evaluation needed")
-    
     return recommendations
 
-def render_trend_analysis(predictions_history: list):
-    """
-    Render trend analysis for multiple predictions.
+# def render_trend_analysis(predictions_history: list):
+#     """
+#     Render trend analysis for multiple predictions.
     
-    Args:
-        predictions_history: List of historical predictions
-    """
-    if len(predictions_history) < 2:
-        return
+#     Args:
+#         predictions_history: List of historical predictions
+#     """
+#     if len(predictions_history) < 2:
+#         return
     
-    st.subheader("📈 Trend Analysis")
+#     st.subheader("📈 Trend Analysis")
     
-    # Create trend data
-    df = pd.DataFrame([
-        {
-            'timestamp': pred['timestamp'],
-            'triage_level': pred['triage_level'],
-            'confidence': pred['confidence'],
-            'patient_id': pred.get('patient_id', 'Unknown')
-        }
-        for pred in predictions_history
-    ])
+#     # Create trend data
+#     df = pd.DataFrame([
+#         {
+#             'timestamp': pred['timestamp'],
+#             'triage_level': pred['triage_level'],
+#             'confidence': pred['confidence'],
+#             'patient_id': pred.get('patient_id', 'Unknown')
+#         }
+#         for pred in predictions_history
+#     ])
     
-    col1, col2 = st.columns(2)
+#     col1, col2 = st.columns(2)
     
-    with col1:
-        # Triage level over time
-        fig = px.line(
-            df, 
-            x='timestamp', 
-            y='triage_level',
-            title='Triage Level Trend',
-            markers=True
-        )
-        fig.update_yaxis(dtick=1)
-        st.plotly_chart(fig, use_container_width=True)
+#     with col1:
+#         # Triage level over time
+#         fig = px.line(
+#             df, 
+#             x='timestamp', 
+#             y='triage_level',
+#             title='Triage Level Trend',
+#             markers=True
+#         )
+#         fig.update_yaxis(dtick=1)
+#         st.plotly_chart(fig, use_container_width=True)
     
-    with col2:
-        # Confidence over time
-        fig = px.line(
-            df, 
-            x='timestamp', 
-            y='confidence',
-            title='Prediction Confidence Trend',
-            markers=True
-        )
-        fig.update_yaxis(tickformat='.0%')
-        st.plotly_chart(fig, use_container_width=True)
+#     with col2:
+#         # Confidence over time
+#         fig = px.line(
+#             df, 
+#             x='timestamp', 
+#             y='confidence',
+#             title='Prediction Confidence Trend',
+#             markers=True
+#         )
+#         fig.update_yaxis(tickformat='.0%')
+#         st.plotly_chart(fig, use_container_width=True)

@@ -155,15 +155,6 @@ def render_patient_input_form() -> Dict[str, Any]:
             help="Patient's level of consciousness using AVPU scale"
         )
     
-    # # Triage Category (if known/for training purposes)
-    # with st.expander("🏥 Triage Information", expanded=False):
-    #     patient_data['Triage_Category'] = st.selectbox(
-    #         "Triage Category (if known)",
-    #         options=["", "0", "1", "2"],
-    #         index=0,
-    #         help="Assigned triage category (0=Critical, 1=Urgent, 2=Non-urgent)"
-    #     )
-    
     return patient_data
 
 def render_quick_entry_buttons():

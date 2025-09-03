@@ -78,7 +78,7 @@ class TriageModel:
         
         # Extract numeric features in order
         features.append(patient_data.get('age', 0))
-        features.append(1 if patient_data.get('sex', 'Male') == 'Female' else 0)
+        features.append(1 if patient_data.get('sex', 'Female') == 'Male' else 0)
         features.append(1 if patient_data.get('active_bleeding', 'No') == 'Yes' else 0)
         features.append(patient_data.get('resp_rate', 16))
         features.append(patient_data.get('heart_rate', 80))
@@ -108,7 +108,7 @@ class TriageModel:
             'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
             'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy'
         ]
-        categorical_feature_names = list(dummy_df.columns)
+        categorical_feature_names = dummy_df.columns
         all_feature_names = numeric_feature_names + categorical_feature_names
 
         return pd.DataFrame([features], columns=all_feature_names)
