@@ -20,36 +20,22 @@ def render_patient_input_form() -> Dict[str, Any]:
         col1, col2 = st.columns(2)
         
         with col1:
-            patient_data['patient_id'] = st.text_input(
-                "Patient ID",
-                placeholder="Enter patient identifier",
-                help="Unique identifier for the patient"
-            )
-            
             patient_data['age'] = st.number_input(
                 "Age (years)",
-                min_value=0,
-                max_value=120,
+                min_value=18,
+                max_value=80,
                 value=None,
                 help="Patient's age in years"
             )
         
         with col2:
-            patient_data['gender'] = st.selectbox(
-                "Gender",
-                options=["", "Male", "Female", "Other", "Prefer not to say"],
+            patient_data['sex'] = st.selectbox(
+                "Sex",
+                options=["", "Male", "Female"],
                 index=0,
                 help="Patient's gender"
             )
             
-            patient_data['weight'] = st.number_input(
-                "Weight (kg)",
-                min_value=0.0,
-                max_value=300.0,
-                value=None,
-                step=0.1,
-                help="Patient's weight in kilograms (optional)"
-            )
     
     # Vital signs section
     with st.expander("🫀 Vital Signs", expanded=True):
@@ -71,8 +57,8 @@ def render_patient_input_form() -> Dict[str, Any]:
             hr_range = vital_ranges['heart_rate']['normal']
             patient_data['heart_rate'] = st.number_input(
                 f"Heart Rate (bpm) - Normal: {hr_range[0]}-{hr_range[1]} bpm",
-                min_value=30,
-                max_value=250,
+                min_value=60,
+                max_value=116,
                 value=None,
                 help="Heart rate in beats per minute"
             )
@@ -80,8 +66,8 @@ def render_patient_input_form() -> Dict[str, Any]:
             rr_range = vital_ranges['respiratory_rate']['normal']
             patient_data['respiratory_rate'] = st.number_input(
                 f"Respiratory Rate (breaths/min) - Normal: {rr_range[0]}-{rr_range[1]} /min",
-                min_value=5,
-                max_value=60,
+                min_value=12,
+                max_value=27,
                 value=None,
                 help="Breathing rate per minute"
             )
