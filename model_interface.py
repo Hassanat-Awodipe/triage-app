@@ -48,7 +48,7 @@ class TriageModel:
         Attempt to load your actual model from common paths.
         Add your model loading logic here.
         """
-        path = 'model/triage_model.pkl'
+        path = 'triage_model.pkl'
         if os.path.exists(path):
             try:
                 self.model = joblib.load(path)
@@ -97,61 +97,83 @@ class TriageModel:
         features.append(patient_data.get('AVPU_scale', 'Alert'))
         features.append(patient_data.get('chief_complaint', 'Chest Pain'))
 
-        
-
-        return pd.DataFrame(features)
-    
-    def _mock_prediction(self, features: np.ndarray) -> Dict[str, Any]:
-        """
-        Mock prediction for demonstration purposes.
-        
-        TODO: Remove this when you integrate your actual model.
-        """
-        # Simple rule-based mock logic for demonstration
-        age = features[0, 0]
-        temperature = features[0, 1]
-        heart_rate = features[0, 2]
-        bp_systolic = features[0, 3]
-        oxygen_sat = features[0, 6]
-        pain_level = features[0, 7]
-        consciousness = features[0, 8]
-        
-        # Count critical symptoms (last 9 features are symptoms)
-        critical_symptoms = np.sum(features[0, 9:])
-        
-        # Mock triage logic
-        if (consciousness <= 1 or oxygen_sat < 90 or bp_systolic > 180 or 
-            temperature > 40 or critical_symptoms >= 3):
-            triage_level = 1
-            confidence = 0.95
-        elif (pain_level >= 8 or heart_rate > 120 or temperature > 38.5 or 
-              critical_symptoms >= 2):
-            triage_level = 2
-            confidence = 0.85
-        elif (pain_level >= 5 or heart_rate > 100 or temperature > 38 or 
-              critical_symptoms >= 1):
-            triage_level = 3
-            confidence = 0.75
-        elif pain_level >= 3 or age > 65:
-            triage_level = 4
-            confidence = 0.70
-        else:
-            triage_level = 5
-            confidence = 0.80
-        
-        # Generate mock confidence scores for all categories
-        confidence_scores = np.random.dirichlet([1] * 5)
-        confidence_scores[triage_level - 1] = confidence
-        confidence_scores = confidence_scores / confidence_scores.sum()
-        
-        return {
-            'triage_level': int(triage_level),
-            'confidence': float(confidence),
-            'confidence_scores': confidence_scores.tolist(),
-            'category': self.triage_categories[triage_level]['name'],
-            'color': self.triage_categories[triage_level]['color'],
-            'description': self.triage_categories[triage_level]['description']
+        # Create dummy variables for categorical features
+        categorical_data = {
+            'mode_of_arrival': patient_data.get('mode_of_arrival', 'Ambulance'),
+            'AVPU_scale': patient_data.get('AVPU_scale', 'Alert'),
+            'chief_complaint': patient_data.get('chief_complaint', 'Chest Pain')
         }
+
+        # Convert to DataFrame for dummy encoding
+        categorical_df = pd.DataFrame([categorical_data])
+        dummy_df = pd.get_dummies(categorical_df, drop_first=True)
+
+        # Extend features with dummy variables
+        for col in dummy_df.columns:
+            features.append(dummy_df[col].iloc[0])
+
+        # Convert to DataFrame with proper column names
+        numeric_feature_names = [
+            'age', 'resp_rate', 'heart_rate', 'systolic_bp', 'diastolic_bp', 
+            'temperature', 'oxygen_sat', 'sex', 'active_bleeding', 'pregnancy'
+        ]
+        all_feature_names = numeric_feature_names + dummy_df.columns
+
+        return pd.DataFrame([features], columns=all_feature_names)
+
+        # return pd.DataFrame(features)
+    
+    # def _mock_prediction(self, features: np.ndarray) -> Dict[str, Any]:
+    #     """
+    #     Mock prediction for demonstration purposes.
+        
+    #     TODO: Remove this when you integrate your actual model.
+    #     """
+    #     # Simple rule-based mock logic for demonstration
+    #     age = features[0, 0]
+    #     temperature = features[0, 1]
+    #     heart_rate = features[0, 2]
+    #     bp_systolic = features[0, 3]
+    #     oxygen_sat = features[0, 6]
+    #     pain_level = features[0, 7]
+    #     consciousness = features[0, 8]
+        
+    #     # Count critical symptoms (last 9 features are symptoms)
+    #     critical_symptoms = np.sum(features[0, 9:])
+        
+    #     # Mock triage logic
+    #     if (consciousness <= 1 or oxygen_sat < 90 or bp_systolic > 180 or 
+    #         temperature > 40 or critical_symptoms >= 3):
+    #         triage_level = 1
+    #         confidence = 0.95
+    #     elif (pain_level >= 8 or heart_rate > 120 or temperature > 38.5 or 
+    #           critical_symptoms >= 2):
+    #         triage_level = 2
+    #         confidence = 0.85
+    #     elif (pain_level >= 5 or heart_rate > 100 or temperature > 38 or 
+    #           critical_symptoms >= 1):
+    #         triage_level = 3
+    #         confidence = 0.75
+    #     elif pain_level >= 3 or age > 65:
+    #         triage_level = 4
+    #         confidence = 0.70
+    #     else:
+    #         triage_level = 5
+    #         confidence = 0.80
+        
+    #     # Generate mock confidence scores for all categories
+    #     confidence_scores = np.random.dirichlet([1] * 5)
+    #     confidence_scores[triage_level - 1] = confidence
+    #     confidence_scores = confidence_scores / confidence_scores.sum()
+        
+    #     return {
+    #         'triage_level': int(triage_level),
+    #         'confidence': float(confidence),
+    #         'confidence_scores': confidence_scores.tolist(),
+    #         'category': self.triage_categories[triage_level]['name'],
+    #         'color': self.triage_categories[triage_level]['color'],
+    #         'description': self.triage_categories[triage_level]['description']
+    #     }
     
     def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -172,16 +194,15 @@ class TriageModel:
                 # Example:
                 # if self.scaler:
                 #     features = self.scaler.transform(features)
-                # prediction = self.model.predict(features)[0]
-                # probabilities = self.model.predict_proba(features)[0]
-                # confidence = np.max(probabilities)
+                prediction = self.model.predict(features)[0]
+                probabilities = self.model.predict_proba(features)[0]
+                confidence = np.max(probabilities)
                 
                 # For now, use mock prediction
-                return self._mock_prediction(features)
+                return self.load_model(features)
             else:
                 # Use mock prediction when no actual model is loaded
                 print("⚠️ No trained model found. Using mock prediction for demonstration.")
-                return self._mock_prediction(features)
                 
         except Exception as e:
             raise Exception(f"Prediction failed: {str(e)}")
@@ -199,13 +220,13 @@ class TriageModel:
             # Return mock importance for demonstration
             return {feature: np.random.random() for feature in self.feature_names}
     
-    def get_model_info(self) -> Dict[str, Any]:
-        """
-        Get information about the loaded model.
-        """
-        return {
-            'model_type': type(self.model).__name__ if self.model else 'Mock Model',
-            'feature_count': len(self.feature_names),
-            'categories': list(self.triage_categories.values()),
-            'is_mock': self.model is None
-        }
+    # def get_model_info(self) -> Dict[str, Any]:
+    #     """
+    #     Get information about the loaded model.
+    #     """
+    #     return {
+    #         'model_type': type(self.model).__name__ if self.model else 'Mock Model',
+    #         'feature_count': len(self.feature_names),
+    #         'categories': list(self.triage_categories.values()),
+    #         'is_mock': self.model is None
+    #     }
