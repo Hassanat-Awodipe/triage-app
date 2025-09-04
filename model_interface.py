@@ -106,16 +106,16 @@ class TriageModel:
         categorical_df = pd.DataFrame([categorical_data])
         dummy_df = pd.get_dummies(categorical_df, drop_first=True)
 
-        # Extend features with dummy variables
+        # Extend features with dummy variables (convert to int to avoid type issues)
         for col in dummy_df.columns:
-            features.append(dummy_df[col].iloc[0])
+            features.append(int(dummy_df[col].iloc[0]))
 
         # Convert to DataFrame with proper column names
         numeric_feature_names = [
             'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
             'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy'
         ]
-        categorical_feature_names = dummy_df.columns
+        categorical_feature_names = list(dummy_df.columns)
         all_feature_names = numeric_feature_names + categorical_feature_names
 
         return pd.DataFrame([features], columns=all_feature_names)
