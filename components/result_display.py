@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from utils import format_patient_summary, calculate_risk_score
+from utils import format_patient_summary #, calculate_risk_score
 
 def render_prediction_results(prediction_result: Dict[str, Any], patient_data: Dict[str, Any], show_confidence: bool = True):
     """
@@ -62,8 +62,8 @@ def render_prediction_results(prediction_result: Dict[str, Any], patient_data: D
         # Confidence scores chart
         if show_confidence and 'confidence_scores' in prediction_result:
             confidence_scores = prediction_result['confidence_scores']
-            categories = ['Critical', 'Urgent', 'Semi-urgent', 'Non-urgent', 'Low priority']
-            colors = ['#FF4B4B', '#FF8C00', '#FFD700', '#32CD32', '#E0E0E0']
+            categories = ['Emergency', 'Urgent', 'Non-urgent']
+            colors = ['#FF4B4B', '#FFD700', '#E0E0E0']
             
             fig = go.Figure(data=[
                 go.Bar(
@@ -125,25 +125,22 @@ def render_prediction_results(prediction_result: Dict[str, Any], patient_data: D
             st.markdown(f"{icon} **{status['name']}**: {status['value']} {status['unit']} {status['note']}")
         
         # Symptoms summary
-        symptoms = patient_data.get('symptoms', [])
-        if symptoms:
+        chief_complaint = patient_data.get('chief_complaint', [])
+        if chief_complaint:
             st.markdown("**🩺 Presenting Symptoms:**")
-            for symptom in symptoms:
-                symptom_formatted = symptom.replace('_', ' ').title()
-                severity_icon = "🔴" if symptom in ['chest_pain', 'difficulty_breathing', 'severe_bleeding', 'head_injury'] else "🟡"
-                st.markdown(f"{severity_icon} {symptom_formatted}")
+            for complaint in chief_complaint:
+                complaint_formatted = complaint.replace('_', ' ').title()
+                severity_icon = "🔴" if complaint in ['chest_pain', 'difficulty_breathing', 'injury', 'headache'] else "🟡"
+                st.markdown(f"{severity_icon} {complaint_formatted}")
         else:
-            st.markdown("**🩺 Presenting Symptoms:** None reported")
+            st.markdown("**🩺 Presenting Complaint:** None reported")
         
-        # Pain and consciousness
-        pain_level = patient_data.get('pain_level', 0)
-        consciousness = patient_data.get('consciousness_level', 'Alert')
+        # Consciousness
+        AVPU_scale = patient_data.get('AVPU_scale', 'Alert')
         
-        pain_icon = "🔴" if pain_level >= 8 else "🟡" if pain_level >= 5 else "🟢"
-        consciousness_icon = "🔴" if consciousness in ['Unresponsive', 'Responds to voice'] else "🟡" if consciousness in ['Drowsy', 'Confused'] else "🟢"
+        AVPU_scale_icon = "🔴" if AVPU_scale in ['unresponsive', 'voice'] else "🟡" if AVPU_scale in ['Pain'] else "🟢"
         
-        st.markdown(f"{pain_icon} **Pain Level:** {pain_level}/10")
-        st.markdown(f"{consciousness_icon} **Consciousness:** {consciousness}")
+        st.markdown(f"{AVPU_scale_icon} **Consciousness:** {AVPU_scale}")
     
     # Action recommendations
     st.subheader("🎯 Recommended Actions")
@@ -188,12 +185,12 @@ def _get_vital_signs_status(patient_data: Dict[str, Any]) -> Dict[str, Dict[str,
         Dictionary with vital signs status
     """
     vital_ranges = {
-        'temperature': {'normal': (36.0, 37.5), 'critical': (35.0, 40.0), 'unit': '°C', 'name': 'Temperature'},
-        'heart_rate': {'normal': (60, 100), 'critical': (40, 150), 'unit': 'bpm', 'name': 'Heart Rate'},
-        'blood_pressure_systolic': {'normal': (90, 140), 'critical': (70, 180), 'unit': 'mmHg', 'name': 'Systolic BP'},
-        'blood_pressure_diastolic': {'normal': (60, 90), 'critical': (40, 110), 'unit': 'mmHg', 'name': 'Diastolic BP'},
-        'respiratory_rate': {'normal': (12, 20), 'critical': (8, 30), 'unit': '/min', 'name': 'Respiratory Rate'},
-        'oxygen_saturation': {'normal': (95, 100), 'critical': (85, 100), 'unit': '%', 'name': 'Oxygen Saturation'}
+        'temperature': {'normal': (36.0, 37.5), 'emergency': (35.0, 40.0), 'unit': '°C', 'name': 'Temperature'},
+        'heart_rate': {'normal': (60, 100), 'emergency': (40, 150), 'unit': 'bpm', 'name': 'Heart Rate'},
+        'systolic_bp': {'normal': (90, 140), 'emergency': (70, 180), 'unit': 'mmHg', 'name': 'Systolic BP'},
+        'diastolic_bp': {'normal': (60, 90), 'emergency': (40, 110), 'unit': 'mmHg', 'name': 'Diastolic BP'},
+        'resp_rate': {'normal': (12, 20), 'emergency': (8, 30), 'unit': '/min', 'name': 'Respiratory Rate'},
+        'oxygen_sat': {'normal': (95, 100), 'emergency': (85, 100), 'unit': '%', 'name': 'Oxygen Saturation'}
     }
     
     status = {}
@@ -202,11 +199,11 @@ def _get_vital_signs_status(patient_data: Dict[str, Any]) -> Dict[str, Dict[str,
         if vital in patient_data and patient_data[vital] is not None:
             value = patient_data[vital]
             normal_min, normal_max = ranges['normal']
-            critical_min, critical_max = ranges['critical']
+            critical_min, critical_max = ranges['emergency']
             
             if value < critical_min or value > critical_max:
-                vital_status = 'critical'
-                note = '(Critical)'
+                vital_status = 'emergency'
+                note = '(emergency)'
             elif value < normal_min or value > normal_max:
                 vital_status = 'abnormal'
                 note = '(Abnormal)'
@@ -264,51 +261,3 @@ def _get_recommendations(triage_level: int, patient_data: Dict[str, Any]) -> lis
     
     return recommendations
 
-# def render_trend_analysis(predictions_history: list):
-#     """
-#     Render trend analysis for multiple predictions.
-    
-#     Args:
-#         predictions_history: List of historical predictions
-#     """
-#     if len(predictions_history) < 2:
-#         return
-    
-#     st.subheader("📈 Trend Analysis")
-    
-#     # Create trend data
-#     df = pd.DataFrame([
-#         {
-#             'timestamp': pred['timestamp'],
-#             'triage_level': pred['triage_level'],
-#             'confidence': pred['confidence'],
-#             'patient_id': pred.get('patient_id', 'Unknown')
-#         }
-#         for pred in predictions_history
-#     ])
-    
-#     col1, col2 = st.columns(2)
-    
-#     with col1:
-#         # Triage level over time
-#         fig = px.line(
-#             df, 
-#             x='timestamp', 
-#             y='triage_level',
-#             title='Triage Level Trend',
-#             markers=True
-#         )
-#         fig.update_yaxis(dtick=1)
-#         st.plotly_chart(fig, use_container_width=True)
-    
-#     with col2:
-#         # Confidence over time
-#         fig = px.line(
-#             df, 
-#             x='timestamp', 
-#             y='confidence',
-#             title='Prediction Confidence Trend',
-#             markers=True
-#         )
-#         fig.update_yaxis(tickformat='.0%')
-#         st.plotly_chart(fig, use_container_width=True)

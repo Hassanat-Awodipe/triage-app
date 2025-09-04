@@ -32,7 +32,7 @@ def load_triage_model():
 
 def main():
     # Header
-    st.title("🏥 Medical Triage Classification System")
+    st.title("🏥 AI-Assisted Medical Triage for Resource-Limited Settings - Nigeria")
     st.markdown("---")
     
     # Sidebar for instructions and settings
@@ -47,11 +47,9 @@ def main():
         5. Click 'Classify Triage Level' for results
         
         **Triage Categories:**
-        - 🔴 **Critical** (1): Immediate attention required
-        - 🟠 **Urgent** (2): Treatment within 30 minutes
-        - 🟡 **Semi-urgent** (3): Treatment within 2 hours
-        - 🟢 **Non-urgent** (4): Treatment within 4 hours
-        - ⚪ **Low priority** (5): Treatment when convenient
+        - 🔴 **Emergency** (0): Immediate attention required
+        - 🟡 **Urgent** (1): Treatment within 2 hours
+        - 🟢 **Non-urgent** (2): Treatment within 4 hours
         """)
         
         st.markdown("---")

@@ -5,7 +5,7 @@ Input form components for the medical triage application.
 
 import streamlit as st
 from typing import Dict, Any, List
-from utils import get_vital_signs_ranges
+# from utils import get_vital_signs_ranges
 
 def render_patient_input_form() -> Dict[str, Any]:
     """
@@ -18,6 +18,9 @@ def render_patient_input_form() -> Dict[str, Any]:
     
     # Demographics section
     with st.expander("👤 Patient Demographics", expanded=True):
+        patient_data['patent_id'] = st.text_input('Patient ID:',
+            help="Name or ID of the patient"
+            )
         col1, col2 = st.columns(2)
         
         with col1:
@@ -32,7 +35,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col2:
             patient_data['sex'] = st.selectbox(
                 "Sex",
-                options=["Male", "Female"],
+                options=["", "Male", "Female"],
                 index=0,
                 help="Patient's gender"
             )
@@ -44,7 +47,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col1:
             patient_data['active_bleeding'] = st.selectbox(
                 "Active Bleeding",
-                options=["Yes", "No"],
+                options=["", "Yes", "No"],
                 index=0,
                 help="Is the patient actively bleeding?"
             )
@@ -52,7 +55,7 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col2:
             patient_data['pregnancy'] = st.selectbox(
                 "Pregnancy",
-                options=["Yes", "No"],
+                options=["", "Yes", "No"],
                 index=0,
                 help="Is the patient pregnant? (if applicable)"
             )
@@ -72,21 +75,19 @@ def render_patient_input_form() -> Dict[str, Any]:
         with col2:
             patient_data['chief_complaint'] = st.selectbox(
                 "Chief Complaint",
-                options=["Chest Pain", "Difficulty Breathing", "Headache", "Vomiting or Diarrhea", "Fever", "Injury", "Pregnancy-related Complication", "Psychiatric/behavioral Emergency", "Seizure or Loss of Consciousness", "weakness_or_fatigue", "Other"],
+                options=["", "Chest Pain", "Difficulty Breathing", "Headache", "Vomiting or Diarrhea", "Fever", "Injury", "Pregnancy-related Complication", "Psychiatric/behavioral Emergency", "Seizure or Loss of Consciousness", "Weakness or Fatigue", "Other"],
                 index=0,
                 help="Primary reason for the visit"
             )
     
     # Vital signs section
     with st.expander("🫀 Vital Signs", expanded=True):
-        vital_ranges = get_vital_signs_ranges()
         
         col1, col2 = st.columns(2)
         
         with col1:
-            temp_range = vital_ranges['temperature']['normal']
             patient_data['temperature'] = st.number_input(
-                f"Temperature (°C) - Normal: {temp_range[0]}-{temp_range[1]}°C",
+                'Temperature (Celsius): ',
                 min_value=36.0,
                 max_value=39.0,
                 value=None,
@@ -94,18 +95,17 @@ def render_patient_input_form() -> Dict[str, Any]:
                 help="Body temperature in Celsius"
             )
             
-            hr_range = vital_ranges['heart_rate']['normal']
             patient_data['heart_rate'] = st.number_input(
-                f"Heart Rate (bpm) - Normal: {hr_range[0]}-{hr_range[1]} bpm",
+                'Heart Rate: ',
                 min_value=60,
                 max_value=116,
                 value=None,
                 help="Heart rate in beats per minute"
             )
+
             
-            rr_range = vital_ranges['respiratory_rate']['normal']
             patient_data['resp_rate'] = st.number_input(
-                f"Respiratory Rate (breaths/min) - Normal: {rr_range[0]}-{rr_range[1]} /min",
+                'Respiratory Rate:',
                 min_value=12,
                 max_value=27,
                 value=None,
@@ -118,9 +118,8 @@ def render_patient_input_form() -> Dict[str, Any]:
             bp_col1, bp_col2 = st.columns(2)
             
             with bp_col1:
-                sbp_range = vital_ranges['blood_pressure_systolic']['normal']
                 patient_data['systolic_bp'] = st.number_input(
-                    f"Systolic (Normal: {sbp_range[0]}-{sbp_range[1]})",
+                    "Systolic: ",
                     min_value=104,
                     max_value=154,
                     value=None,
@@ -128,18 +127,16 @@ def render_patient_input_form() -> Dict[str, Any]:
                 )
             
             with bp_col2:
-                dbp_range = vital_ranges['blood_pressure_diastolic']['normal']
                 patient_data['diastolic_bp'] = st.number_input(
-                    f"Diastolic (Normal: {dbp_range[0]}-{dbp_range[1]})",
+                    "Diastolic: ",
                     min_value=62,
                     max_value=103,
                     value=None,
                     help="Diastolic blood pressure"
                 )
             
-            spo2_range = vital_ranges['oxygen_saturation']['normal']
             patient_data['oxygen_sat'] = st.number_input(
-                f"Oxygen Saturation (%) - Normal: {spo2_range[0]}-{spo2_range[1]}%",
+                "Oxygen Saturation (%)",
                 min_value=81,
                 max_value=100,
                 value=None,
@@ -157,69 +154,69 @@ def render_patient_input_form() -> Dict[str, Any]:
     
     return patient_data
 
-def render_quick_entry_buttons():
-    """
-    Render quick entry buttons for common scenarios.
-    """
-    st.markdown("### 🚀 Quick Entry Templates")
+# def render_quick_entry_buttons():
+#     """
+#     Render quick entry buttons for common scenarios.
+#     """
+#     st.markdown("### 🚀 Quick Entry Templates")
     
-    col1, col2, col3 = st.columns(3)
+#     col1, col2, col3 = st.columns(3)
     
-    with col1:
-        if st.button("😷 Typical Flu Symptoms"):
-            return {
-                'age': 35,
-                'sex': 'Female',
-                'active_bleeding': 'No',
-                'resp_rate': 18,
-                'heart_rate': 95,
-                'systolic_bp': 125,
-                'diastolic_bp': 80,
-                'temperature': 38.5,
-                'oxygen_sat': 97,
-                'pregnancy': 'No',
-                'mode_of_arrival': 'Walk-in',
-                'chief_complaint': 'Fever',
-                'AVPU_scale': 'Alert',
-                'Triage_Category': '2'
-            }
+#     with col1:
+#         if st.button("😷 Typical Flu Symptoms"):
+#             return {
+#                 'age': 35,
+#                 'sex': 'Female',
+#                 'active_bleeding': 'No',
+#                 'resp_rate': 18,
+#                 'heart_rate': 95,
+#                 'systolic_bp': 125,
+#                 'diastolic_bp': 80,
+#                 'temperature': 38.5,
+#                 'oxygen_sat': 97,
+#                 'pregnancy': 'No',
+#                 'mode_of_arrival': 'Walk-in',
+#                 'chief_complaint': 'Fever',
+#                 'AVPU_scale': 'Alert',
+#                 'Triage_Category': '2'
+#             }
     
-    with col2:
-        if st.button("💔 Chest Pain Scenario"):
-            return {
-                'age': 58,
-                'sex': 'Male',
-                'active_bleeding': 'No',
-                'resp_rate': 22,
-                'heart_rate': 110,
-                'systolic_bp': 150,
-                'diastolic_bp': 95,
-                'temperature': 37.2,
-                'oxygen_sat': 95,
-                'pregnancy': 'No',
-                'mode_of_arrival': 'Ambulance',
-                'chief_complaint': 'Chest Pain',
-                'AVPU_scale': 'Alert',
-                'Triage_Category': '0'
-            }
+#     with col2:
+#         if st.button("💔 Chest Pain Scenario"):
+#             return {
+#                 'age': 58,
+#                 'sex': 'Male',
+#                 'active_bleeding': 'No',
+#                 'resp_rate': 22,
+#                 'heart_rate': 110,
+#                 'systolic_bp': 150,
+#                 'diastolic_bp': 95,
+#                 'temperature': 37.2,
+#                 'oxygen_sat': 95,
+#                 'pregnancy': 'No',
+#                 'mode_of_arrival': 'Ambulance',
+#                 'chief_complaint': 'Chest Pain',
+#                 'AVPU_scale': 'Alert',
+#                 'Triage_Category': '0'
+#             }
     
-    with col3:
-        if st.button("🩸 Injury Case"):
-            return {
-                'age': 28,
-                'sex': 'Male',
-                'active_bleeding': 'Yes',
-                'resp_rate': 24,
-                'heart_rate': 125,
-                'systolic_bp': 90,
-                'diastolic_bp': 60,
-                'temperature': 36.8,
-                'oxygen_sat': 92,
-                'pregnancy': 'No',
-                'mode_of_arrival': 'Ambulance',
-                'chief_complaint': 'Injury',
-                'AVPU_scale': 'Voice',
-                'Triage_Category': '0'
-            }
+#     with col3:
+#         if st.button("🩸 Injury Case"):
+#             return {
+#                 'age': 28,
+#                 'sex': 'Male',
+#                 'active_bleeding': 'Yes',
+#                 'resp_rate': 24,
+#                 'heart_rate': 125,
+#                 'systolic_bp': 90,
+#                 'diastolic_bp': 60,
+#                 'temperature': 36.8,
+#                 'oxygen_sat': 92,
+#                 'pregnancy': 'No',
+#                 'mode_of_arrival': 'Ambulance',
+#                 'chief_complaint': 'Injury',
+#                 'AVPU_scale': 'Voice',
+#                 'Triage_Category': '0'
+#             }
     
-    return None
+    
