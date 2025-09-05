@@ -36,7 +36,7 @@ class TriageModel:
         - self.scaler = joblib.load('path/to/your/scaler.pkl')
         - self.feature_names = ['age', 'temperature', 'heart_rate', ...]
         """
-        self.model =  joblib.load('triage_model.pkl')
+        self.model =  joblib.load('triage_model_(5).pkl')
         # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
@@ -55,7 +55,7 @@ class TriageModel:
         Attempt to load your actual model from common paths.
         Add your model loading logic here.
         """
-        path = 'triage_model.pkl'
+        path = 'triage_model_(5).pkl'
         if os.path.exists(path):
             try:
                 self.model = joblib.load(path)
@@ -77,48 +77,72 @@ class TriageModel:
     
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
         """
-        Convert patient data to model features.
+        Convert patient data to model features compatible with triage_model_(5).pkl.
         
-        TODO: Implement your actual feature engineering logic here.
+        Returns a DataFrame with numeric features and dummy-encoded categorical features.
         """
-        features = []
+        # Prepare numeric features in the exact order expected by the model
+        numeric_features = {
+            'age': patient_data.get('age', 0),
+            'sex': 1 if patient_data.get('sex', 'Male') == 'Female' else 0,
+            'active_bleeding': 1 if patient_data.get('active_bleeding', 'No') == 'Yes' else 0,
+            'resp_rate': patient_data.get('resp_rate', patient_data.get('respiratory_rate', 16)),
+            'heart_rate': patient_data.get('heart_rate', 80),
+            'systolic_bp': patient_data.get('systolic_bp', patient_data.get('blood_pressure_systolic', 120)),
+            'diastolic_bp': patient_data.get('diastolic_bp', patient_data.get('blood_pressure_diastolic', 80)),
+            'temperature': patient_data.get('temperature', 37.0),
+            'oxygen_sat': patient_data.get('oxygen_sat', patient_data.get('oxygen_saturation', 98)),
+            'pregnancy': 1 if patient_data.get('pregnancy', 'No') == 'Yes' else 0
+        }
         
-        # Extract numeric features in order
-        features.append(patient_data.get('age', 0))
-        features.append(1 if patient_data.get('sex', 'Female') == 'Male' else 0)
-        features.append(1 if patient_data.get('active_bleeding', 'No') == 'Yes' else 0)
-        features.append(patient_data.get('resp_rate', 16))
-        features.append(patient_data.get('heart_rate', 80))
-        features.append(patient_data.get('systolic_bp', 120))
-        features.append(patient_data.get('diastolic_bp', 80))
-        features.append(patient_data.get('temperature', 37.0))
-        features.append(patient_data.get('oxygen_sat', 98))
-        features.append(1 if patient_data.get('pregnancy', 'No') == 'Yes' else 0)
-
-        # Create dummy variables for categorical features
+        # Create numeric DataFrame
+        numeric_df = pd.DataFrame([numeric_features])
+        
+        # Prepare categorical features for dummy encoding
         categorical_data = {
             'mode_of_arrival': patient_data.get('mode_of_arrival', 'Ambulance'),
-            'chief_complaint': patient_data.get('chief_complaint', 'Chest Pain'),
-            'AVPU_scale': patient_data.get('AVPU_scale', 'Alert')
+            'chief_complaint': patient_data.get('chief_complaint', 'Abdominal pain'),
+            'AVPU_scale': patient_data.get('AVPU_scale', patient_data.get('consciousness_level', 'Alert'))
         }
-
-        # Convert to DataFrame for dummy encoding
+        
+        # Create DataFrame for dummy encoding
         categorical_df = pd.DataFrame([categorical_data])
-        dummy_df = pd.get_dummies(categorical_df, drop_first=True)
-
-        # Extend features with dummy variables (convert to int to avoid type issues)
-        for col in dummy_df.columns:
-            features.append(int(dummy_df[col].iloc[0]))
-
-        # Convert to DataFrame with proper column names
-        numeric_feature_names = [
-            'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
-            'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy'
+        
+        # Create dummy variables for all categorical features
+        dummy_df = pd.get_dummies(categorical_df, columns=['mode_of_arrival', 'chief_complaint', 'AVPU_scale'])
+        
+        # Remove reference columns (Ambulance, Abdominal pain, Alert)
+        reference_columns = [
+            'mode_of_arrival_Ambulance',
+            'chief_complaint_Abdominal pain', 
+            'AVPU_scale_Alert'
         ]
-        categorical_feature_names = list(dummy_df.columns)
-        all_feature_names = numeric_feature_names + categorical_feature_names
-
-        return pd.DataFrame([features], columns=all_feature_names)
+        
+        for ref_col in reference_columns:
+            if ref_col in dummy_df.columns:
+                dummy_df = dummy_df.drop(columns=[ref_col])
+        
+        # Convert dummy variables to int
+        dummy_df = dummy_df.astype(int)
+        
+        # Define expected dummy columns based on your training data
+        expected_dummy_columns = [
+            'mode_of_arrival_Private vehicle', 'mode_of_arrival_Walk-in', 
+            'chief_complaint_Chest pain', 'chief_complaint_Difficulty breathing', 
+            'chief_complaint_Fever', 'chief_complaint_Headache', 'chief_complaint_Injury', 
+            'chief_complaint_Other', 'chief_complaint_Pregnancy-related complication', 
+            'chief_complaint_Psychiatric/behavioral emergency', 'chief_complaint_Seizure or loss of consciousness', 
+            'chief_complaint_Vomiting or diarrhea', 'chief_complaint_Weakness or fatigue', 
+            'AVPU_scale_Pain', 'AVPU_scale_Unresponsive', 'AVPU_scale_Voice'
+        ]
+        
+        # Reindex to ensure all expected columns are present with 0 for missing ones
+        dummy_df = dummy_df.reindex(columns=expected_dummy_columns, fill_value=0)
+        
+        # Combine numeric and categorical features
+        result_df = pd.concat([numeric_df, dummy_df], axis=1)
+        
+        return result_df
     
     
     def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
