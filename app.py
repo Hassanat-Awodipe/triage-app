@@ -32,7 +32,7 @@ def load_triage_model():
 
 def main():
     # Header
-    st.title("🏥 AI-Assisted Medical Triage for Resource-Limited Settings - Nigeria")
+    st.title("AI-Assisted Medical Triage for Resource-Limited Settings - Nigeria")
     st.markdown("---")
     
     # Sidebar for instructions and settings
@@ -40,11 +40,10 @@ def main():
         st.header("📋 Instructions")
         st.markdown("""
         **How to use this system:**
-        1. Fill in patient demographics
-        2. Enter vital signs measurements
-        3. Select presenting symptoms
-        4. Add additional clinical notes
-        5. Click 'Classify Triage Level' for results
+        1. Fill in patient information on the left panel
+        2. Enter vital signs measurements 
+        3. Select chief complaint. Only one complaint can be selected as the chief complaint. This is usually what brings the patient to the facility.
+        4. Click 'Classify Triage Level' for results
         
         **Triage Categories:**
         - 🔴 **Emergency** (0): Immediate attention required
@@ -161,35 +160,35 @@ def main():
             # Show placeholder when no prediction is made
             st.info("👆 Complete the patient information form and click 'Classify Triage Level' to see results.")
             
-            # Show example visualization
-            st.markdown("### Example Triage Distribution")
+            # # Show example visualization
+            # st.markdown("### Example Triage Distribution")
             
-            # Create example chart
-            example_data = {
-                'Category': ['Critical', 'Urgent', 'Semi-urgent', 'Non-urgent', 'Low priority'],
-                'Count': [12, 45, 78, 134, 89],
-                'Colors': ['#FF4B4B', '#FF8C00', '#FFD700', '#32CD32', '#E0E0E0']
-            }
+            # # Create example chart
+            # example_data = {
+            #     'Category': ['Critical', 'Urgent', 'Semi-urgent', 'Non-urgent', 'Low priority'],
+            #     'Count': [12, 45, 78, 134, 89],
+            #     'Colors': ['#FF4B4B', '#FF8C00', '#FFD700', '#32CD32', '#E0E0E0']
+            # }
             
-            fig = go.Figure(data=[
-                go.Bar(
-                    x=example_data['Category'],
-                    y=example_data['Count'],
-                    marker_color=example_data['Colors'],
-                    text=example_data['Count'],
-                    textposition='auto',
-                )
-            ])
+            # fig = go.Figure(data=[
+            #     go.Bar(
+            #         x=example_data['Category'],
+            #         y=example_data['Count'],
+            #         marker_color=example_data['Colors'],
+            #         text=example_data['Count'],
+            #         textposition='auto',
+            #     )
+            # ])
             
-            fig.update_layout(
-                title="Daily Triage Distribution (Example)",
-                xaxis_title="Triage Category",
-                yaxis_title="Number of Patients",
-                showlegend=False,
-                height=400
-            )
+            # fig.update_layout(
+            #     title="Daily Triage Distribution (Example)",
+            #     xaxis_title="Triage Category",
+            #     yaxis_title="Number of Patients",
+            #     showlegend=False,
+            #     height=400
+            # )
             
-            st.plotly_chart(fig, use_container_width=True)
+            # st.plotly_chart(fig, use_container_width=True)
 
     # Footer with recent predictions
     if st.session_state.predictions:

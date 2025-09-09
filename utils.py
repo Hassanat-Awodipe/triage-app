@@ -31,8 +31,8 @@ def validate_inputs(patient_data: Dict[str, Any]) -> List[str]:
     # Validate ranges
     if 'age' in patient_data and patient_data['age'] is not None:
         age = patient_data['age']
-        if age < 18 or age > 80:
-            errors.append("Age must be between 18 and 80 years")
+        if age < 12 or age > 100:
+            errors.append("Age must be between 12 and 100 years")
     
     if 'temperature' in patient_data and patient_data['temperature'] is not None:
         temp = patient_data['temperature']
@@ -107,7 +107,7 @@ VITAL SIGNS:
 - Consciousness: {patient_data.get('AVPU_scale', 'N/A')}
 
 Complaint:
-{', '.join(patient_data.get('chief_complaint', ['None reported']))}
+{patient_data.get('chief_complaint', ['None reported'])}
 
 TRIAGE CLASSIFICATION:
 - Level: {prediction_result.get('triage_level', 'Unknown')}

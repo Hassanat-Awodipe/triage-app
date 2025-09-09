@@ -86,69 +86,76 @@ def render_prediction_results(prediction_result: Dict[str, Any], patient_data: D
             
             st.plotly_chart(fig, use_container_width=True)
         
-        # Risk factors
-        st.subheader("⚠️ Risk Assessment")
+        # # Risk factors
+        # st.subheader("⚠️ Risk Assessment")
         
-        risk_score = calculate_risk_score(patient_data)
-        risk_color = '#FF4B4B' if risk_score > 0.7 else '#FF8C00' if risk_score > 0.4 else '#32CD32'
+        # risk_score = calculate_risk_score(patient_data)
+        # risk_color = '#FF4B4B' if risk_score > 0.7 else '#FF8C00' if risk_score > 0.4 else '#32CD32'
         
-        st.markdown(
-            f"""
-            <div style="
-                padding: 15px;
-                border-radius: 8px;
-                background-color: {risk_color}20;
-                border-left: 5px solid {risk_color};
-                margin: 10px 0;
-            ">
-                <h4 style="margin: 0; color: {risk_color};">
-                    Overall Risk Score: {risk_score:.1%}
-                </h4>
-                <p style="margin: 5px 0; color: #666;">
-                    {'High risk - requires immediate attention' if risk_score > 0.7 else 
-                     'Moderate risk - monitor closely' if risk_score > 0.4 else 
-                     'Low risk - routine care appropriate'}
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # st.markdown(
+        #     f"""
+        #     <div style="
+        #         padding: 15px;
+        #         border-radius: 8px;
+        #         background-color: {risk_color}20;
+        #         border-left: 5px solid {risk_color};
+        #         margin: 10px 0;
+        #     ">
+        #         <h4 style="margin: 0; color: {risk_color};">
+        #             Overall Risk Score: {risk_score:.1%}
+        #         </h4>
+        #         <p style="margin: 5px 0; color: #666;">
+        #             {'High risk - requires immediate attention' if risk_score > 0.7 else 
+        #              'Moderate risk - monitor closely' if risk_score > 0.4 else 
+        #              'Low risk - routine care appropriate'}
+        #         </p>
+        #     </div>
+        #     """,
+        #     unsafe_allow_html=True
+        # )
     
     with col2:
-        st.subheader("📋 Clinical Summary")
+        st.subheader("🎯 Recommended Actions")
+
+        recommendations = _get_recommendations(triage_level, patient_data)
+
+        for i, rec in enumerate(recommendations, 1):
+            st.markdown(f"{i}. {rec}")
         
-        # Vital signs status
-        vital_status = _get_vital_signs_status(patient_data)
+    #     st.subheader("📋 Clinical Summary")
         
-        for vital, status in vital_status.items():
-            icon = "🔴" if status['status'] == 'critical' else "🟡" if status['status'] == 'abnormal' else "🟢"
-            st.markdown(f"{icon} **{status['name']}**: {status['value']} {status['unit']} {status['note']}")
+    #     # Vital signs status
+    #     vital_status = _get_vital_signs_status(patient_data)
         
-        # Symptoms summary
-        chief_complaint = patient_data.get('chief_complaint', [])
-        if chief_complaint:
-            st.markdown("**🩺 Presenting Symptoms:**")
-            for complaint in chief_complaint:
-                complaint_formatted = complaint.replace('_', ' ').title()
-                severity_icon = "🔴" if complaint in ['chest_pain', 'difficulty_breathing', 'injury', 'headache'] else "🟡"
-                st.markdown(f"{severity_icon} {complaint_formatted}")
-        else:
-            st.markdown("**🩺 Presenting Complaint:** None reported")
+    #     for vital, status in vital_status.items():
+    #         icon = "🔴" if status['status'] == 'critical' else "🟡" if status['status'] == 'abnormal' else "🟢"
+    #         st.markdown(f"{icon} **{status['name']}**: {status['value']} {status['unit']} {status['note']}")
         
-        # Consciousness
-        AVPU_scale = patient_data.get('AVPU_scale', 'Alert')
+    #     # Symptoms summary
+    #     chief_complaint = patient_data.get('chief_complaint', [])
+    #     if chief_complaint:
+    #         st.markdown("**🩺 Presenting Symptoms:**")
+    #         for complaint in chief_complaint:
+    #             complaint_formatted = complaint.replace('_', ' ').title()
+    #             severity_icon = "🔴" if complaint in ['chest_pain', 'difficulty_breathing', 'injury', 'headache'] else "🟡"
+    #             st.markdown(f"{severity_icon} {complaint_formatted}")
+    #     else:
+    #         st.markdown("**🩺 Presenting Complaint:** None reported")
         
-        AVPU_scale_icon = "🔴" if AVPU_scale in ['unresponsive', 'voice'] else "🟡" if AVPU_scale in ['Pain'] else "🟢"
+    #     # Consciousness
+    #     AVPU_scale = patient_data.get('AVPU_scale', 'Alert')
         
-        st.markdown(f"{AVPU_scale_icon} **Consciousness:** {AVPU_scale}")
+    #     AVPU_scale_icon = "🔴" if AVPU_scale in ['unresponsive', 'voice'] else "🟡" if AVPU_scale in ['Pain'] else "🟢"
+        
+    #     st.markdown(f"{AVPU_scale_icon} **Consciousness:** {AVPU_scale}")
     
-    # Action recommendations
-    st.subheader("🎯 Recommended Actions")
+    # # Action recommendations
+    # st.subheader("🎯 Recommended Actions")
     
-    recommendations = _get_recommendations(triage_level, patient_data)
+    # recommendations = _get_recommendations(triage_level, patient_data)
     
-    for i, rec in enumerate(recommendations, 1):
-        st.markdown(f"{i}. {rec}")
+    # for i, rec in enumerate(recommendations, 1):
+    #     st.markdown(f"{i}. {rec}")
     
     # Patient summary download
     st.subheader("📄 Patient Summary")
@@ -174,52 +181,52 @@ def render_prediction_results(prediction_result: Dict[str, Any], patient_data: D
             use_container_width=True
         )
 
-def _get_vital_signs_status(patient_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    """
-    Evaluate vital signs status.
+# def _get_vital_signs_status(patient_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+#     """
+#     Evaluate vital signs status.
     
-    Args:
-        patient_data: Patient data dictionary
+#     Args:
+#         patient_data: Patient data dictionary
         
-    Returns:
-        Dictionary with vital signs status
-    """
-    vital_ranges = {
-        'temperature': {'normal': (36.0, 37.5), 'emergency': (35.0, 40.0), 'unit': '°C', 'name': 'Temperature'},
-        'heart_rate': {'normal': (60, 100), 'emergency': (40, 150), 'unit': 'bpm', 'name': 'Heart Rate'},
-        'systolic_bp': {'normal': (90, 140), 'emergency': (70, 180), 'unit': 'mmHg', 'name': 'Systolic BP'},
-        'diastolic_bp': {'normal': (60, 90), 'emergency': (40, 110), 'unit': 'mmHg', 'name': 'Diastolic BP'},
-        'resp_rate': {'normal': (12, 20), 'emergency': (8, 30), 'unit': '/min', 'name': 'Respiratory Rate'},
-        'oxygen_sat': {'normal': (95, 100), 'emergency': (85, 100), 'unit': '%', 'name': 'Oxygen Saturation'}
-    }
+#     Returns:
+#         Dictionary with vital signs status
+#     """
+#     vital_ranges = {
+#         'temperature': {'normal': (36.0, 37.5), 'emergency': (35.0, 40.0), 'unit': '°C', 'name': 'Temperature'},
+#         'heart_rate': {'normal': (60, 100), 'emergency': (40, 150), 'unit': 'bpm', 'name': 'Heart Rate'},
+#         'systolic_bp': {'normal': (90, 140), 'emergency': (70, 180), 'unit': 'mmHg', 'name': 'Systolic BP'},
+#         'diastolic_bp': {'normal': (60, 90), 'emergency': (40, 110), 'unit': 'mmHg', 'name': 'Diastolic BP'},
+#         'resp_rate': {'normal': (12, 20), 'emergency': (8, 30), 'unit': '/min', 'name': 'Respiratory Rate'},
+#         'oxygen_sat': {'normal': (95, 100), 'emergency': (85, 100), 'unit': '%', 'name': 'Oxygen Saturation'}
+#     }
     
-    status = {}
+#     status = {}
     
-    for vital, ranges in vital_ranges.items():
-        if vital in patient_data and patient_data[vital] is not None:
-            value = patient_data[vital]
-            normal_min, normal_max = ranges['normal']
-            critical_min, critical_max = ranges['emergency']
+#     for vital, ranges in vital_ranges.items():
+#         if vital in patient_data and patient_data[vital] is not None:
+#             value = patient_data[vital]
+#             normal_min, normal_max = ranges['normal']
+#             critical_min, critical_max = ranges['emergency']
             
-            if value < critical_min or value > critical_max:
-                vital_status = 'emergency'
-                note = '(emergency)'
-            elif value < normal_min or value > normal_max:
-                vital_status = 'abnormal'
-                note = '(Abnormal)'
-            else:
-                vital_status = 'normal'
-                note = '(Normal)'
+#             if value < critical_min or value > critical_max:
+#                 vital_status = 'emergency'
+#                 note = '(emergency)'
+#             elif value < normal_min or value > normal_max:
+#                 vital_status = 'abnormal'
+#                 note = '(Abnormal)'
+#             else:
+#                 vital_status = 'normal'
+#                 note = '(Normal)'
             
-            status[vital] = {
-                'status': vital_status,
-                'value': value,
-                'unit': ranges['unit'],
-                'name': ranges['name'],
-                'note': note
-            }
+#             status[vital] = {
+#                 'status': vital_status,
+#                 'value': value,
+#                 'unit': ranges['unit'],
+#                 'name': ranges['name'],
+#                 'note': note
+#             }
     
-    return status
+#     return status
 
 def _get_recommendations(triage_level: int, patient_data: Dict[str, Any]) -> list:
     """

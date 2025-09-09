@@ -70,7 +70,7 @@ def render_patient_input_form() -> Dict[str, Any]:
                 "Chief Complaint",
                 options=[
                     "", "Chest pain", "Difficulty breathing", "Headache",
-                    "Vomiting or diarrhea", "Fever", "Injury", "Abdominal pain"
+                    "Vomiting or diarrhea", "Fever", "Injury", "Abdominal pain",
                     "Pregnancy-related complication",
                     "Psychiatric/behavioral emergency",
                     "Seizure or loss of consciousness", "Weakness or fatigue",
