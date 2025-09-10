@@ -46,8 +46,6 @@ class TriageModel:
             2: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment when convenient'},
         }
 
-        # color codes: #32CD32, FFD700
-
         # Try to load actual model if it exists
         self.load_model()
 

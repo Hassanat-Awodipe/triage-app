@@ -8,6 +8,7 @@ from typing import Dict, Any, List
 import io
 from datetime import datetime
 
+
 def validate_inputs(patient_data: Dict[str, Any]) -> List[str]:
     """
     Validate patient input data.
@@ -19,62 +20,63 @@ def validate_inputs(patient_data: Dict[str, Any]) -> List[str]:
         List of validation error messages (empty if valid)
     """
     errors = []
-    
+
     # Check required fields
-    required_fields = ['age', 'sex', 'mode_of_arrival', 'chief_complaint', 'active_bleeding',  'heart_rate', 'systolic_bp', 
-                      'diastolic_bp', 'resp_rate', 'temperature', 'oxygen_sat', 'AVPU_scale', 'pregnancy']
-    
+    required_fields = ['age', 'sex', 'mode_of_arrival', 'chief_complaint', 'active_bleeding', 'heart_rate',
+                       'systolic_bp',
+                       'diastolic_bp', 'resp_rate', 'temperature', 'oxygen_sat', 'AVPU_scale', 'pregnancy']
+
     for field in required_fields:
         if field not in patient_data or patient_data[field] is None:
             errors.append(f"Missing required field: {field}")
-    
+
     # Validate ranges
     if 'age' in patient_data and patient_data['age'] is not None:
         age = patient_data['age']
         if age < 12 or age > 100:
             errors.append("Age must be between 12 and 100 years")
-    
+
     if 'temperature' in patient_data and patient_data['temperature'] is not None:
         temp = patient_data['temperature']
         if temp < 30 or temp > 45:
             errors.append("Temperature must be between 30°C and 45°C")
-    
+
     if 'heart_rate' in patient_data and patient_data['heart_rate'] is not None:
         hr = patient_data['heart_rate']
         if hr < 40 or hr > 120:
             errors.append("Heart rate must be between 40 and 120 bpm")
-    
+
     if 'systolic_bp' in patient_data and patient_data['systolic_bp'] is not None:
         sbp = patient_data['systolic_bp']
         if sbp < 90 or sbp > 180:
             errors.append("Systolic blood pressure must be between 90 and 180 mmHg")
-    
+
     if 'diastolic_bp' in patient_data and patient_data['diastolic_bp'] is not None:
         dbp = patient_data['diastolic_bp']
         if dbp < 60 or dbp > 120:
             errors.append("Diastolic blood pressure must be between 60 and 120 mmHg")
-    
+
     if 'resp_rate' in patient_data and patient_data['resp_rate'] is not None:
         rr = patient_data['resp_rate']
         if rr < 12 or rr > 27:
             errors.append("Respiratory rate must be between 12 and 27 breaths/min")
-    
+
     if 'oxygen_sat' in patient_data and patient_data['oxygen_sat'] is not None:
         spo2 = patient_data['oxygen_sat']
         if spo2 < 50 or spo2 > 100:
             errors.append("Oxygen saturation must be between 50% and 100%")
 
-    
     # Validate blood pressure relationship
-    if ('systolic_bp' in patient_data and 
-        'diastolic_bp' in patient_data and
-        patient_data['systolic_bp'] is not None and
-        patient_data['diastolic_bp'] is not None):
-        
+    if ('systolic_bp' in patient_data and
+            'diastolic_bp' in patient_data and
+            patient_data['systolic_bp'] is not None and
+            patient_data['diastolic_bp'] is not None):
+
         if patient_data['systolic_bp'] <= patient_data['diastolic_bp']:
             errors.append("Systolic blood pressure must be higher than diastolic")
-    
+
     return errors
+
 
 def format_patient_summary(patient_data: Dict[str, Any], prediction_result: Dict[str, Any]) -> str:
     """
@@ -88,7 +90,7 @@ def format_patient_summary(patient_data: Dict[str, Any], prediction_result: Dict
         Formatted summary string
     """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     summary = f"""
 AI ASSISTED MEDICAL TRIAGE REPORT
 Generated: {timestamp}
@@ -121,6 +123,7 @@ Clinical judgment should always be used in conjunction with these results.
 """
     return summary
 
+
 def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
     """
     Export prediction results to CSV format.
@@ -133,7 +136,7 @@ def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
     """
     if not predictions:
         return ""
-    
+
     # Prepare data for CSV
     rows = []
     for pred in predictions:
@@ -157,22 +160,22 @@ def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
             'Description': pred.get('description', '')
         }
         rows.append(row)
-    
+
     # Convert to DataFrame and then CSV
     df = pd.DataFrame(rows)
-    
+
     # Use StringIO to get CSV string
     output = io.StringIO()
     df.to_csv(output, index=False)
     csv_string = output.getvalue()
     output.close()
-    
+
     return csv_string
 
 # def get_vital_signs_ranges() -> Dict[str, Dict[str, Any]]:
 #     """
 #     Get normal ranges for vital signs for reference.
-    
+
 #     Returns:
 #         Dictionary with vital sign ranges
 #     """
@@ -212,25 +215,25 @@ def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
 # def calculate_risk_score(patient_data: Dict[str, Any]) -> float:
 #     """
 #     Calculate a simple risk score based on patient data.
-    
+
 #     Args:
 #         patient_data: Patient information
-        
+
 #     Returns:
 #         Risk score between 0 and 1
 #     """
 #     score = 0.0
 #     max_score = 0.0
-    
+
 #     vital_ranges = get_vital_signs_ranges()
-    
+
 #     # Check vital signs against normal ranges
 #     for vital, ranges in vital_ranges.items():
 #         if vital in patient_data and patient_data[vital] is not None:
 #             value = patient_data[vital]
 #             normal_min, normal_max = ranges['normal']
 #             max_score += 1.0
-            
+
 #             if value < normal_min:
 #                 # Below normal
 #                 deviation = (normal_min - value) / normal_min
@@ -239,28 +242,28 @@ def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
 #                 # Above normal
 #                 deviation = (value - normal_max) / normal_max
 #                 score += min(deviation, 1.0)
-    
+
 #     # Factor in age
 #     age = patient_data.get('age', 0)
 #     if age > 65:
 #         max_score += 1.0
 #         score += (age - 65) / 35  # Normalize to 0-1 for ages 65-100
-    
+
 #     # Factor in symptoms
 #     critical_symptoms = ['chest_pain', 'difficulty_breathing', 'severe_bleeding', 'head_injury']
 #     symptoms = patient_data.get('symptoms', [])
-    
+
 #     for symptom in critical_symptoms:
 #         max_score += 1.0
 #         if symptom in symptoms:
 #             score += 1.0
-    
+
 #     # Factor in pain level
 #     pain_level = patient_data.get('pain_level', 0)
 #     if pain_level > 0:
 #         max_score += 1.0
 #         score += pain_level / 10.0
-    
+
 #     # Factor in consciousness level
 #     consciousness = patient_data.get('consciousness_level', 'Alert')
 #     consciousness_scores = {
@@ -269,7 +272,7 @@ def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
 #     }
 #     max_score += 1.0
 #     score += consciousness_scores.get(consciousness, 0.0)
-    
+
 #     # Normalize score
 #     if max_score > 0:
 #         return min(score / max_score, 1.0)

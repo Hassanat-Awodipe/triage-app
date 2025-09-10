@@ -190,6 +190,5 @@ def main():
         st.dataframe(df, width='stretch')
 
 
-
 if __name__ == "__main__":
     main()
