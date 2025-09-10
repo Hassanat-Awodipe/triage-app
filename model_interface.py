@@ -54,7 +54,7 @@ class TriageModel:
         Attempt to load your actual model from common paths.
         Add your model loading logic here.
         """
-        path = 'triage_model_(5).pkl'
+        path = 'triage_model (1).pkl'
         if os.path.exists(path):
             try:
                 self.model = joblib.load(path)
