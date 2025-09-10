@@ -86,9 +86,9 @@ def main():
         
         # Prediction button
         predict_button = st.button(
-            "🔍 Classify Triage Level", 
+            "Get Triage",
             type="primary",
-            use_container_width=True
+            width='stretch'
         )
         
         # Auto-predict if enabled and data is valid
@@ -209,7 +209,7 @@ def main():
             })
         
         df = pd.DataFrame(display_data)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
 
 if __name__ == "__main__":
     main()
