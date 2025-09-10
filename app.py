@@ -24,20 +24,21 @@ if 'predictions' not in st.session_state:
 if 'patient_data' not in st.session_state:
     st.session_state.patient_data = {}
 
+
 # Initialize the triage model
 @st.cache_resource
 def load_triage_model():
     """Load and cache the triage classification model"""
     return TriageModel()
 
+
 def main():
     # Header
     st.title("AI-Assisted Medical Triage for Resource-Limited Settings - Nigeria")
     st.markdown("---")
-    
+
     # Sidebar for instructions and settings
     with st.sidebar:
-        st.header("📋 Instructions")
         st.markdown("""
         **How to use this system:**
         1. Fill in patient information on the left panel
@@ -50,20 +51,18 @@ def main():
         - 🟡 **Urgent** (1): Treatment within 2 hours
         - 🟢 **Non-urgent** (2): Treatment within 4 hours
         """)
-        
+
         st.markdown("---")
-        
+
         # Settings
-        st.header("⚙️ Settings")
         show_confidence = st.checkbox("Show confidence scores", value=True)
         auto_predict = st.checkbox("Auto-predict on input change", value=False)
-        
+
         st.markdown("---")
-        
+
         # Export options
-        st.header("📥 Export Results")
         if st.session_state.predictions:
-            if st.button("Download All Results"):
+            if st.button("📥 Download All Results"):
                 csv_data = export_results_to_csv(st.session_state.predictions)
                 st.download_button(
                     label="📄 Download CSV",
@@ -72,36 +71,45 @@ def main():
                     mime="text/csv"
                 )
 
+        st.markdown("---")
+        st.subheader('Model Information')
+        model = load_triage_model()
+        info = model.get_model_info()
+
+        st.write(f"**Model Type:** {info['model_type']}")
+        st.write(f"**Feature Count:** {info['feature_count']}")
+        # st.write(f"**Number of training data:** {info['train_data']}")
+
     # Main content area
     col1, col2 = st.columns([1, 1])
-    
+
     with col1:
         st.header("📝 Patient Information")
-        
+
         # Render patient input form
         patient_data = render_patient_input_form()
-        
+
         # Store in session state
         st.session_state.patient_data = patient_data
-        
+
         # Prediction button
         predict_button = st.button(
             "Get Triage",
             type="primary",
             width='stretch'
         )
-        
+
         # Auto-predict if enabled and data is valid
         if auto_predict and validate_inputs(patient_data):
             predict_button = True
-    
+
     with col2:
         st.header("📊 Triage Classification Results")
-        
+
         if predict_button or (auto_predict and validate_inputs(patient_data)):
             # Validate inputs
             validation_errors = validate_inputs(patient_data)
-            
+
             if validation_errors:
                 st.error("Please correct the following errors:")
                 for error in validation_errors:
@@ -110,23 +118,23 @@ def main():
                 # Show progress bar
                 progress_bar = st.progress(0)
                 status_text = st.empty()
-                
+
                 try:
                     # Load model and make prediction
                     status_text.text("Loading triage model...")
                     progress_bar.progress(25)
-                    
-                    model = load_triage_model()
-                    
+
+                    # model = load_triage_model()
+
                     status_text.text("Processing patient data...")
                     progress_bar.progress(50)
-                    
+
                     # Make prediction
                     prediction_result = model.predict(patient_data)
-                    
+
                     status_text.text("Generating results...")
                     progress_bar.progress(75)
-                    
+
                     # Store prediction in session state
                     prediction_with_timestamp = {
                         **prediction_result,
@@ -135,69 +143,39 @@ def main():
                         'patient_data': patient_data.copy()
                     }
                     st.session_state.predictions.append(prediction_with_timestamp)
-                    
+
                     progress_bar.progress(100)
                     status_text.text("Classification complete!")
-                    
+
                     # Clear progress indicators
                     progress_bar.empty()
                     status_text.empty()
-                    
+
                     # Display results
                     render_prediction_results(
-                        prediction_result, 
-                        patient_data, 
+                        prediction_result,
+                        patient_data,
                         show_confidence=show_confidence
                     )
-                    
+
                 except Exception as e:
                     progress_bar.empty()
                     status_text.empty()
                     st.error(f"Error during prediction: {str(e)}")
                     st.info("Please check your model configuration and try again.")
-        
+
         else:
             # Show placeholder when no prediction is made
             st.info("👆 Complete the patient information form and click 'Classify Triage Level' to see results.")
-            
-            # # Show example visualization
-            # st.markdown("### Example Triage Distribution")
-            
-            # # Create example chart
-            # example_data = {
-            #     'Category': ['Critical', 'Urgent', 'Semi-urgent', 'Non-urgent', 'Low priority'],
-            #     'Count': [12, 45, 78, 134, 89],
-            #     'Colors': ['#FF4B4B', '#FF8C00', '#FFD700', '#32CD32', '#E0E0E0']
-            # }
-            
-            # fig = go.Figure(data=[
-            #     go.Bar(
-            #         x=example_data['Category'],
-            #         y=example_data['Count'],
-            #         marker_color=example_data['Colors'],
-            #         text=example_data['Count'],
-            #         textposition='auto',
-            #     )
-            # ])
-            
-            # fig.update_layout(
-            #     title="Daily Triage Distribution (Example)",
-            #     xaxis_title="Triage Category",
-            #     yaxis_title="Number of Patients",
-            #     showlegend=False,
-            #     height=400
-            # )
-            
-            # st.plotly_chart(fig, use_container_width=True)
 
     # Footer with recent predictions
     if st.session_state.predictions:
         st.markdown("---")
         st.header("📈 Recent Classifications")
-        
+
         # Show last 5 predictions in a table
         recent_predictions = st.session_state.predictions[-5:]
-        
+
         display_data = []
         for pred in recent_predictions:
             display_data.append({
@@ -207,11 +185,11 @@ def main():
                 'Category': pred['category'],
                 'Confidence': f"{pred['confidence']:.1%}"
             })
-        
+
         df = pd.DataFrame(display_data)
         st.dataframe(df, width='stretch')
 
+
+
 if __name__ == "__main__":
     main()
-
-

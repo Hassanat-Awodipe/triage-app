@@ -18,6 +18,7 @@ import shap
 import joblib
 import os
 
+
 class TriageModel:
     """
     Interface for the triage classification model.
@@ -25,7 +26,7 @@ class TriageModel:
     IMPORTANT: Replace this with your actual trained model.
     This is a template that shows the expected interface.
     """
-    
+
     def __init__(self):
         """
         Initialize the triage model.
@@ -36,7 +37,7 @@ class TriageModel:
         - self.scaler = joblib.load('path/to/your/scaler.pkl')
         - self.feature_names = ['age', 'temperature', 'heart_rate', ...]
         """
-        self.model =  joblib.load('triage_model (1).pkl')
+        self.model = joblib.load('triage_model (1).pkl')
         # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
@@ -46,10 +47,10 @@ class TriageModel:
         }
 
         # color codes: #32CD32, FFD700
-        
+
         # Try to load actual model if it exists
         self.load_model()
-    
+
     def load_model(self):
         """
         Attempt to load your actual model from common paths.
@@ -62,7 +63,7 @@ class TriageModel:
                 print(f"✅ Loaded model from {path}")
             except Exception as e:
                 print(f"❌ Failed to load model from {path}: {e}")
-    
+
     def _get_expected_features(self) -> List[str]:
         """
         Define the expected feature names for your model.
@@ -74,7 +75,7 @@ class TriageModel:
             'systolic_bp', 'diastolic_bp', 'temperature', 'oxygen_sat', 'pregnancy',
             'mode_of_arrival', 'chief_complaint', 'AVPU_scale'
         ]
-    
+
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
         """
         Convert patient data to model features compatible with triage_model_(5).pkl.
@@ -94,58 +95,56 @@ class TriageModel:
             'oxygen_sat': patient_data.get('oxygen_sat', 98),
             'pregnancy': 1 if patient_data.get('pregnancy', 'No') == 'Yes' else 0
         }
-        
+
         # Create numeric DataFrame
         numeric_df = pd.DataFrame([numeric_features])
-        
+
         # Prepare categorical features for dummy encoding
         categorical_data = {
             'mode_of_arrival': patient_data.get('mode_of_arrival', 'Walk-in'),
             'chief_complaint': patient_data.get('chief_complaint', 'Abdominal pain'),
             'AVPU_scale': patient_data.get('AVPU_scale', 'Alert')
         }
-        
+
         # Create DataFrame for dummy encoding
         categorical_df = pd.DataFrame([categorical_data])
-        
+
         # Create dummy variables for all categorical features
         dummy_df = pd.get_dummies(categorical_df).astype(int)
-        
+
         # # Remove reference columns (Ambulance, Abdominal pain, Alert)
         # reference_columns = [
         #     'mode_of_arrival_Ambulance',
         #     'chief_complaint_Abdominal pain', 
         #     'AVPU_scale_Alert'
         # ]
-        
+
         # for ref_col in reference_columns:
         #     if ref_col in dummy_df.columns:
         #         dummy_df = dummy_df.drop(columns=[ref_col])
-        
-        
-        # Define expected dummy columns based on your training data
+
+        # Define expected dummy columns based on the training data
         expected_dummy_columns = [
             'mode_of_arrival_Private vehicle', 'mode_of_arrival_Walk-in',
-               'chief_complaint_Abdominal pain', 'chief_complaint_Chest pain',
-               'chief_complaint_Difficulty breathing', 'chief_complaint_Fever',
-               'chief_complaint_Headache', 'chief_complaint_Injury',
-               'chief_complaint_Pregnancy-related complication',
-               'chief_complaint_Psychiatric/behavioral emergency',
-               'chief_complaint_Seizure or loss of consciousness',
-               'chief_complaint_Vomiting or diarrhea',
-               'chief_complaint_Weakness or fatigue', 'AVPU_scale_Pain',
-               'AVPU_scale_Unresponsive', 'AVPU_scale_Voice'
+            'chief_complaint_Abdominal pain', 'chief_complaint_Chest pain',
+            'chief_complaint_Difficulty breathing', 'chief_complaint_Fever',
+            'chief_complaint_Headache', 'chief_complaint_Injury',
+            'chief_complaint_Pregnancy-related complication',
+            'chief_complaint_Psychiatric/behavioral emergency',
+            'chief_complaint_Seizure or loss of consciousness',
+            'chief_complaint_Vomiting or diarrhea',
+            'chief_complaint_Weakness or fatigue', 'AVPU_scale_Pain',
+            'AVPU_scale_Unresponsive', 'AVPU_scale_Voice'
         ]
-        
+
         # Reindex to ensure all expected columns are present with 0 for missing ones
         dummy_df = dummy_df.reindex(columns=expected_dummy_columns, fill_value=0)
-        
+
         # Combine numeric and categorical features
         result_df = pd.concat([numeric_df, dummy_df], axis=1)
-        
+
         return result_df
-    
-    
+
     def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Make triage prediction for a patient.
@@ -159,20 +158,20 @@ class TriageModel:
         try:
             # Prepare features
             features = self._prepare_features(patient_data)
-            
+
             if self.model is not None:
                 # Use your actual trained model
                 prediction = self.model.predict(features)[0]
                 probabilities = self.model.predict_proba(features)[0]
                 confidence = np.max(probabilities)
-                
+
                 # Get category info
                 category_info = self.triage_categories.get(prediction, {
                     'name': 'Unknown',
                     'color': '#808080',
                     'description': 'Unknown category'
                 })
-                
+
                 return {
                     'triage_level': int(prediction),
                     'category': category_info['name'],
@@ -183,10 +182,11 @@ class TriageModel:
                 }
             else:
                 raise Exception("No trained model loaded. Please check triage_model.pkl file.")
-                
+
         except Exception as e:
             raise Exception(f"Prediction failed: {str(e)}")
-    # change this for shap values
+
+    # calculate feature importance
     def get_feature_importance(self) -> Dict[str, float]:
         """
         Get feature importance scores from the model.
@@ -200,7 +200,7 @@ class TriageModel:
             # Return mock importance for demonstration
             return {feature: np.random.random() for feature in self.feature_names}
 
-    # # change this for shap values
+    # calculate shap values
     # def get_feature_importance(self) -> Dict[str, float]:
     #     """
     #     Get feature importance scores from the model.
@@ -213,7 +213,7 @@ class TriageModel:
     #     else:
     #         # Return mock importance for demonstration
     #         return {feature: np.random.random() for feature in self.feature_names}
-    
+
     def get_model_info(self) -> Dict[str, Any]:
         """
         Get information about the loaded model.
@@ -221,6 +221,35 @@ class TriageModel:
         return {
             'model_type': type(self.model).__name__ if self.model else 'No Model Found',
             'feature_count': len(self.feature_names),
-            'categories': list(self.triage_categories.values()),
-            'is_mock': self.model is None
+            'train_data': self.model.n_features_in_
         }
+
+# # Show example visualization
+# st.markdown("### Example Triage Distribution")
+
+# # Create shap values chart
+# example_data = {
+#     'Category': ['Critical', 'Urgent', 'Semi-urgent', 'Non-urgent', 'Low priority'],
+#     'Count': [12, 45, 78, 134, 89],
+#     'Colors': ['#FF4B4B', '#FF8C00', '#FFD700', '#32CD32', '#E0E0E0']
+# }
+
+# fig = go.Figure(data=[
+#     go.Bar(
+#         x=example_data['Category'],
+#         y=example_data['Count'],
+#         marker_color=example_data['Colors'],
+#         text=example_data['Count'],
+#         textposition='auto',
+#     )
+# ])
+
+# fig.update_layout(
+#     title="Daily Triage Distribution (Example)",
+#     xaxis_title="Triage Category",
+#     yaxis_title="Number of Patients",
+#     showlegend=False,
+#     height=400
+# )
+
+# st.plotly_chart(fig, use_container_width=True)
