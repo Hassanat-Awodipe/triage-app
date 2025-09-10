@@ -1,8 +1,8 @@
 streamlit
+scikit-learn
 joblib
 pandas
 numpy
-scikit-learn
 matplotlib
 seaborn
 shap
