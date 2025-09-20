@@ -20,6 +20,7 @@ st.set_page_config(
 UNDER_CONSTRUCTION = True  # 🔧 change this later
 
 if UNDER_CONSTRUCTION:
+    st.title("AI-Assisted Medical Triage for Resource-Limited Settings - Nigeria")
     st.write("We’re updating the app 🚧. Please check back soon!")
 else:
     # Initialize session state
