@@ -20,9 +20,7 @@ st.set_page_config(
 UNDER_CONSTRUCTION = True  # 🔧 change this later
 
 if UNDER_CONSTRUCTION:
-    # st.set_page_config(page_title="Medical Triage App", page_icon="🚧")
-    st.title("🚧 Page Under Construction 🚧")
-    st.write("We’re updating the app. Please check back soon!")
+    st.write("We’re updating the app 🚧. Please check back soon!")
 else:
     # Initialize session state
     if 'predictions' not in st.session_state:
