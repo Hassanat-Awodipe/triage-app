@@ -1,14 +1,14 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-from datetime import datetime
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
-from model_interface import TriageModel
-from components.input_forms import render_patient_input_form
-from components.result_display import render_prediction_results
-from utils import validate_inputs, export_results_to_csv
+# import pandas as pd
+# import numpy as np
+# from datetime import datetime
+# import plotly.graph_objects as go
+# from plotly.subplots import make_subplots
+#
+# from model_interface import TriageModel
+# from components.input_forms import render_patient_input_form
+# from components.result_display import render_prediction_results
+# from utils import validate_inputs, export_results_to_csv
 
 # Page configuration
 st.set_page_config(
