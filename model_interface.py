@@ -38,7 +38,7 @@ class TriageModel:
         - self.scaler = joblib.load('path/to/your/scaler.pkl')
         - self.feature_names = ['age', 'temperature', 'heart_rate', ...]
         """
-        self.model = joblib.load('triage_model (1).pkl')
+        self.model = joblib.load('triage_model (2).pkl')
         # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
@@ -55,7 +55,7 @@ class TriageModel:
         Attempt to load your actual model from common paths.
         Add your model loading logic here.
         """
-        path = 'triage_model (1).pkl'
+        path = 'triage_model (2).pkl'
         if os.path.exists(path):
             try:
                 self.model = joblib.load(path)
