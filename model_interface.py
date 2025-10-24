@@ -8,6 +8,7 @@ Replace the MockTriageModel with your actual trained model.
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, List
+import sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 import matplotlib.pyplot as plt
