@@ -31,14 +31,9 @@ class TriageModel:
     def __init__(self):
         """
         Initialize the triage model.
-        
-        TODO: Replace this with your actual model loading code.
-        Example:
-        - self.model = joblib.load('path/to/your/model.pkl')
-        - self.scaler = joblib.load('path/to/your/scaler.pkl')
-        - self.feature_names = ['age', 'temperature', 'heart_rate', ...]
+
         """
-        self.model = joblib.load('triage_model (2).pkl')
+        self.model = joblib.load('triage_model (3).pkl')
         # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
@@ -52,10 +47,10 @@ class TriageModel:
 
     def load_model(self):
         """
-        Attempt to load your actual model from common paths.
-        Add your model loading logic here.
+        Attempt to load your actual model from path.
+
         """
-        path = 'triage_model (2).pkl'
+        path = 'triage_model (3).pkl'
         if os.path.exists(path):
             try:
                 self.model = joblib.load(path)
@@ -65,9 +60,8 @@ class TriageModel:
 
     def _get_expected_features(self) -> List[str]:
         """
-        Define the expected feature names for your model.
-        
-        TODO: Replace this with your actual feature names.
+        Define the expected feature names for the model.
+
         """
         return [
             'age', 'sex', 'active_bleeding', 'resp_rate', 'heart_rate',
@@ -77,7 +71,7 @@ class TriageModel:
 
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
         """
-        Convert patient data to model features compatible with triage_model_(5).pkl.
+        Convert patient data to model features compatible with triage_model_(3).pkl.
         
         Returns a DataFrame with numeric features and dummy-encoded categorical features.
         """
@@ -189,8 +183,7 @@ class TriageModel:
     def get_feature_importance(self) -> Dict[str, float]:
         """
         Get feature importance scores from the model.
-        
-        TODO: Implement this based on your model type.
+
         """
         if hasattr(self.model, 'feature_importances_'):
             importance_dict = dict(zip(self.feature_names, self.model.feature_importances_))
