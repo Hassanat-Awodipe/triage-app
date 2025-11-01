@@ -80,10 +80,11 @@ def main():
         st.subheader('Model Information')
         model = load_triage_model()
         info = model.get_model_info()
+        feat_importance, importance_fig = model.get_feature_importance()
+        # explanation
 
-        st.write(f"**Model Type: ** {info['model_type']}")
-        st.write(f"**Feature Count: ** {info['feature_count']}")
-        # st.write(f"**Number of training data:** {info['train_data']}")
+        st.write(f"Type:  {info['model_type']}")
+        st.write(f"Features Count: {info['feature_count']}")
 
     # Main content area
     col1, col2 = st.columns([1, 1])
@@ -172,6 +173,8 @@ def main():
         else:
             # Show placeholder when no prediction is made
             st.info("👆 Complete the patient information form and click 'Classify Triage Level' to see results.")
+            st.write("Influence of Clinical Indicators on the Model:")
+            st.plotly_chart(importance_fig, use_container_width=True)
 
     # Footer with recent predictions
     if st.session_state.predictions:

@@ -2,7 +2,6 @@
 Medical Triage Model Interface
 
 This module provides the interface for integrating your existing triage classification model.
-Replace the MockTriageModel with your actual trained model.
 """
 
 import numpy as np
@@ -16,6 +15,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import shap
+import plotly.express as px
 import joblib
 import os
 
@@ -33,7 +33,7 @@ class TriageModel:
         Initialize the triage model.
 
         """
-        self.model = joblib.load('triage_model (3).pkl')
+        self.model = joblib.load('best_triage_model.pkl')
         # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
@@ -50,7 +50,7 @@ class TriageModel:
         Attempt to load your actual model from path.
 
         """
-        path = 'triage_model (3).pkl'
+        path = 'best_triage_model.pkl'
         if os.path.exists(path):
             try:
                 self.model = joblib.load(path)
@@ -71,7 +71,7 @@ class TriageModel:
 
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
         """
-        Convert patient data to model features compatible with triage_model_(3).pkl.
+        Convert patient data to model features compatible with best_triage_model.pkl.
         
         Returns a DataFrame with numeric features and dummy-encoded categorical features.
         """
@@ -180,40 +180,60 @@ class TriageModel:
             raise Exception(f"Prediction failed: {str(e)}")
 
     # calculate feature importance
-    def get_feature_importance(self) -> Dict[str, float]:
+    def get_feature_importance(self):
         """
         Get feature importance scores from the model.
-
         """
         if hasattr(self.model, 'feature_importances_'):
-            importance_dict = dict(zip(self.feature_names, self.model.feature_importances_))
-            return importance_dict
+            importance = self.model.feature_importances_
+            importance_percent = 100 * (importance / importance.sum())
+            feat_importance = pd.DataFrame({
+                'Feature': self.model.feature_names_in_,
+                'Importance (%)': importance_percent
+            }).sort_values('Importance (%)', ascending=False)
+            # Create a fig to show the importance
+            importance_fig = px.bar(feat_importance,
+                                    x='Importance (%)',
+                                    y='Feature',
+                                    orientation='h'
+                                    )
+            importance_fig.update_layout(
+                yaxis={'categoryorder': 'total ascending'},  # highest on top
+                margin=dict(l=150, r=40, t=60, b=40),
+                height=400 + 20 * len(feat_importance),
+                xaxis_title='Feature Importance (%)',
+                yaxis_title='Feature'
+            )
+            importance_fig.update_yaxes(tickfont=dict(size=10))
+            return feat_importance, importance_fig
         else:
             # Return mock importance for demonstration
-            return {feature: np.random.random() for feature in self.feature_names}
+            raise AttributeError("The model does not have feature_importances_")
 
     # calculate shap values
-    # def get_feature_importance(self) -> Dict[str, float]:
+    # def explain_prediction(self, patient_data: Dict[str, Any]) :
     #     """
-    #     Get feature importance scores from the model.
-
-    #     TODO: Implement this based on your model type.
+    #     Get feature contribution for predicted category
     #     """
-    #     if hasattr(self.model, 'feature_importances_'):
-    #         importance_dict = dict(zip(self.feature_names, self.model.feature_importances_))
+    #     try:
+    #         features = self._prepare_features(patient_data)
+    #         explainer = shap.TreeExplainer(self.model)
+    #         shap_values = explainer.shap_values(features)
+    #         expected_list = explainer.expected_value.tolist()
+    #         shap_list = [shap_values[..., i] for i in range(shap_values.shape[-1])]
     #         return importance_dict
-    #     else:
-    #         # Return mock importance for demonstration
-    #         return {feature: np.random.random() for feature in self.feature_names}
+    #
+    #     except Exception as e:
+    #             raise Exception(f"Cannot Calculate Shap Value: {str(e)}")
 
     def get_model_info(self) -> Dict[str, Any]:
         """
         Get information about the loaded model.
         """
+
         return {
             'model_type': type(self.model).__name__ if self.model else 'No Model Found',
             'feature_count': len(self.feature_names),
-            'train_data': self.model.n_features_in_
         }
 
 # # Show example visualization
