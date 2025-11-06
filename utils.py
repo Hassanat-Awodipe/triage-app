@@ -58,8 +58,8 @@ def validate_inputs(patient_data: Dict[str, Any]) -> List[str]:
 
     if 'resp_rate' in patient_data and patient_data['resp_rate'] is not None:
         rr = patient_data['resp_rate']
-        if rr < 12 or rr > 27:
-            errors.append("Respiratory rate must be between 12 and 27 breaths/min")
+        if rr < 10 or rr > 27:
+            errors.append("Respiratory rate must be between 10 and 27 breaths/min")
 
     if 'oxygen_sat' in patient_data and patient_data['oxygen_sat'] is not None:
         spo2 = patient_data['oxygen_sat']
@@ -96,9 +96,10 @@ AI ASSISTED MEDICAL TRIAGE REPORT
 Generated: {timestamp}
 
 PATIENT INFORMATION:
-- Patient ID: {patient_data.get('patient_id', 'Not provided')}
-- Age: {patient_data.get('age', 'Unknown')} years
-- Gender: {patient_data.get('sex', 'Not specified')}
+- Patient ID: {patient_data.get('patient_id', 'N/A')}
+- Age: {patient_data.get('age', 'N/A')} years
+- Gender: {patient_data.get('sex', 'N/A')}
+- Pregnancy: {patient_data.get('pregnancy', 'N/A')}
 
 VITAL SIGNS:
 - Temperature: {patient_data.get('temperature', 'N/A')}°C
@@ -146,6 +147,7 @@ def export_results_to_csv(predictions: List[Dict[str, Any]]) -> str:
             'Patient_ID': pred.get('patient_id', ''),
             'Age': patient_data.get('age', ''),
             'Gender': patient_data.get('sex', ''),
+            'Pregnancy': patient_data.get('pregnancy', ''),
             'Temperature': patient_data.get('temperature', ''),
             'Heart_Rate': patient_data.get('heart_rate', ''),
             'BP_Systolic': patient_data.get('systolic_bp', ''),

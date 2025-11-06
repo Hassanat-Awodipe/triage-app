@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import shap
 import numpy as np
 from datetime import datetime
 import plotly.graph_objects as go
@@ -80,8 +81,6 @@ def main():
         st.subheader('Model Information')
         model = load_triage_model()
         info = model.get_model_info()
-        feat_importance, importance_fig = model.get_feature_importance()
-        # explanation
 
         st.write(f"Type:  {info['model_type']}")
         st.write(f"Features Count: {info['feature_count']}")
@@ -110,7 +109,7 @@ def main():
             predict_button = True
 
     with col2:
-        st.header("📊 Triage Classification Results")
+        st.header("📊 Triage Results")
 
         if predict_button or (auto_predict and validate_inputs(patient_data)):
             # Validate inputs
@@ -130,13 +129,14 @@ def main():
                     status_text.text("Loading triage model...")
                     progress_bar.progress(25)
 
-                    # model = load_triage_model()
+                    model = load_triage_model()  # model was loaded in the sidebar
 
                     status_text.text("Processing patient data...")
                     progress_bar.progress(50)
 
-                    # Make prediction
+                    # Make prediction and explain
                     prediction_result = model.predict(patient_data)
+                    explanation_result = model.explain(patient_data)
 
                     status_text.text("Generating results...")
                     progress_bar.progress(75)
@@ -160,6 +160,7 @@ def main():
                     # Display results
                     render_prediction_results(
                         prediction_result,
+                        explanation_result,
                         patient_data,
                         show_confidence=show_confidence
                     )
@@ -170,11 +171,15 @@ def main():
                     st.error(f"Error during prediction: {str(e)}")
                     st.info("Please check your model configuration and try again.")
 
+            # explanation_fig = model.explain_prediction(patient_data)
+            # st.pyplot(explanation_fig, use_container_width=True)
+
         else:
             # Show placeholder when no prediction is made
             st.info("👆 Complete the patient information form and click 'Classify Triage Level' to see results.")
-            st.write("Influence of Clinical Indicators on the Model:")
-            st.plotly_chart(importance_fig, use_container_width=True)
+            feat_importance, importance_fig = model.get_feature_importance()
+            st.write("### Influence of Clinical Indicators on the Model:")
+            st.plotly_chart(importance_fig)
 
     # Footer with recent predictions
     if st.session_state.predictions:

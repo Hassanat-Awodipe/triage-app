@@ -9,7 +9,6 @@ import pandas as pd
 from typing import Dict, Any, List
 import sklearn
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, plot_tree
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
@@ -34,15 +33,14 @@ class TriageModel:
 
         """
         self.model = joblib.load('best_triage_model.pkl')
-        # self.scaler = None  # Your feature scaler goes here
         self.feature_names = self._get_expected_features()
         self.triage_categories = {
             0: {'name': 'Emergency', 'color': '#FF4B4B', 'description': 'Immediate attention required'},
-            1: {'name': 'Urgent', 'color': '#FF8C00', 'description': 'Treatment within 30 minutes'},
-            2: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment when convenient'},
+            1: {'name': 'Urgent', 'color': '#FFD700', 'description': 'Treatment within 2 hours'},
+            2: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment within 4 hours'},
         }
 
-        # Try to load actual model if it exists
+        # load model
         self.load_model()
 
     def load_model(self):
@@ -105,17 +103,6 @@ class TriageModel:
         # Create dummy variables for all categorical features
         dummy_df = pd.get_dummies(categorical_df).astype(int)
 
-        # # Remove reference columns (Ambulance, Abdominal pain, Alert)
-        # reference_columns = [
-        #     'mode_of_arrival_Ambulance',
-        #     'chief_complaint_Abdominal pain', 
-        #     'AVPU_scale_Alert'
-        # ]
-
-        # for ref_col in reference_columns:
-        #     if ref_col in dummy_df.columns:
-        #         dummy_df = dummy_df.drop(columns=[ref_col])
-
         # Define expected dummy columns based on the training data
         expected_dummy_columns = [
             'mode_of_arrival_Private vehicle', 'mode_of_arrival_Walk-in',
@@ -153,7 +140,6 @@ class TriageModel:
             features = self._prepare_features(patient_data)
 
             if self.model is not None:
-                # Use your actual trained model
                 prediction = self.model.predict(features)[0]
                 probabilities = self.model.predict_proba(features)[0]
                 confidence = np.max(probabilities)
@@ -200,31 +186,62 @@ class TriageModel:
             importance_fig.update_layout(
                 yaxis={'categoryorder': 'total ascending'},  # highest on top
                 margin=dict(l=150, r=40, t=60, b=40),
-                height=400 + 20 * len(feat_importance),
-                xaxis_title='Feature Importance (%)',
-                yaxis_title='Feature'
+                height=400 + 20 * len(feat_importance)
             )
             importance_fig.update_yaxes(tickfont=dict(size=10))
             return feat_importance, importance_fig
         else:
-            # Return mock importance for demonstration
             raise AttributeError("The model does not have feature_importances_")
 
     # calculate shap values
-    # def explain_prediction(self, patient_data: Dict[str, Any]) :
-    #     """
-    #     Get feature contribution for predicted category
-    #     """
-    #     try:
-    #         features = self._prepare_features(patient_data)
-    #         explainer = shap.TreeExplainer(self.model)
-    #         shap_values = explainer.shap_values(features)
-    #         expected_list = explainer.expected_value.tolist()
-    #         shap_list = [shap_values[..., i] for i in range(shap_values.shape[-1])]
-    #         return importance_dict
-    #
-    #     except Exception as e:
-    #             raise Exception(f"Cannot Calculate Shap Value: {str(e)}")
+    def explain(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get feature contribution for predicted category
+        """
+        try:
+            features_df = self._prepare_features(patient_data)
+            row_index = 0
+            probabilities = self.model.predict_proba(features_df)
+
+            # SHAP explainer
+            explainer = shap.TreeExplainer(self.model)
+            shap_values = explainer.shap_values(features_df)
+            # expected_list = explainer.expected_value.tolist()
+            # shap_list = [shap_values[..., i] for i in range(shap_values.shape[-1])]
+
+            # -labels for the legend
+            class_labels_list = [
+                f"{['Emergency', 'Urgent', 'Non-urgent'][i]} ({probabilities[row_index, i].round(2):.2f})" for i
+                in self.model.classes_]
+            # highlight = [np.argmax(probabilities[row_index])]
+
+            return {
+                'expected_list': explainer.expected_value.tolist(),
+                'shap_list': [shap_values[..., i] for i in range(shap_values.shape[-1])],
+                'row_index': row_index,
+                'feature_names': self.model.feature_names_in_,
+                'class_labels_list': class_labels_list,
+                'highlight': [np.argmax(probabilities[row_index])]
+            }
+            # # generate the plot
+            # explanation_fig, ax = plt.subplots(figsize=(10, 6))
+            # shap.multioutput_decision_plot(
+            #     expected_list,
+            #     shap_list,
+            #     row_index=row_index,
+            #     feature_names=self.model.feature_names_in_,
+            #     highlight=[np.argmax(probabilities[row_index])],
+            #     legend_labels=class_labels_list,
+            #     legend_location="lower right",
+            #     show=False
+            # )
+            #
+            # plt.title("Feature Contribution to Triage Category", fontsize=12, fontweight='bold')
+            # plt.tight_layout()
+            # return explanation_fig
+
+        except Exception as e:
+            raise Exception(f"Cannot Calculate Shap Value: {str(e)}")
 
     def get_model_info(self) -> Dict[str, Any]:
         """
@@ -235,33 +252,3 @@ class TriageModel:
             'model_type': type(self.model).__name__ if self.model else 'No Model Found',
             'feature_count': len(self.feature_names),
         }
-
-# # Show example visualization
-# st.markdown("### Example Triage Distribution")
-
-# # Create shap values chart
-# example_data = {
-#     'Category': ['Critical', 'Urgent', 'Semi-urgent', 'Non-urgent', 'Low priority'],
-#     'Count': [12, 45, 78, 134, 89],
-#     'Colors': ['#FF4B4B', '#FF8C00', '#FFD700', '#32CD32', '#E0E0E0']
-# }
-
-# fig = go.Figure(data=[
-#     go.Bar(
-#         x=example_data['Category'],
-#         y=example_data['Count'],
-#         marker_color=example_data['Colors'],
-#         text=example_data['Count'],
-#         textposition='auto',
-#     )
-# ])
-
-# fig.update_layout(
-#     title="Daily Triage Distribution (Example)",
-#     xaxis_title="Triage Category",
-#     yaxis_title="Number of Patients",
-#     showlegend=False,
-#     height=400
-# )
-
-# st.plotly_chart(fig, use_container_width=True)

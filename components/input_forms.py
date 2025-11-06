@@ -48,9 +48,13 @@ def render_patient_input_form() -> Dict[str, Any]:
                 help="Is the patient actively bleeding?")
 
         with col2:
+            if patient_data['sex'] == "Male":
+                pregnancy_options = ["", "No"]
+            else:
+                pregnancy_options = ["", "Yes", "No"]
             patient_data['pregnancy'] = st.selectbox(
                 "Pregnancy",
-                options=["", "Yes", "No"],
+                options=pregnancy_options,
                 index=0,
                 help="Is the patient pregnant? (if applicable)")
 
@@ -88,7 +92,7 @@ def render_patient_input_form() -> Dict[str, Any]:
             patient_data['temperature'] = st.number_input(
                 'Temperature (Celsius): ',
                 min_value=36.0,
-                max_value=39.0,
+                max_value=40.0,
                 value=None,
                 step=0.1,
                 help="Body temperature in Celsius")
