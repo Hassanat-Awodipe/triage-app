@@ -22,9 +22,6 @@ import os
 class TriageModel:
     """
     Interface for the triage classification model.
-    
-    IMPORTANT: Replace this with your actual trained model.
-    This is a template that shows the expected interface.
     """
 
     def __init__(self):
@@ -45,7 +42,7 @@ class TriageModel:
 
     def load_model(self):
         """
-        Attempt to load your actual model from path.
+        Attempt to load the model from path.
 
         """
         path = 'best_triage_model.pkl'
