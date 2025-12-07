@@ -1,7 +1,7 @@
 """
 Medical Triage Model Interface
 
-This module provides the interface for integrating your existing triage classification model.
+This module provides the interface for integrating the existing triage classification model.
 """
 
 import numpy as np
