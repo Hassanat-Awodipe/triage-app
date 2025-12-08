@@ -4,7 +4,6 @@ Input form components for the medical triage application.
 
 import streamlit as st
 from typing import Dict, Any, List
-# from utils import get_vital_signs_ranges
 
 
 def render_patient_input_form() -> Dict[str, Any]:
@@ -150,67 +149,3 @@ def render_patient_input_form() -> Dict[str, Any]:
     return patient_data
 
 
-# def render_quick_entry_buttons():
-#     """
-#     Render quick entry buttons for common scenarios.
-#     """
-#     st.markdown("### 🚀 Quick Entry Templates")
-
-#     col1, col2, col3 = st.columns(3)
-
-#     with col1:
-#         if st.button("😷 Typical Flu Symptoms"):
-#             return {
-#                 'age': 35,
-#                 'sex': 'Female',
-#                 'active_bleeding': 'No',
-#                 'resp_rate': 18,
-#                 'heart_rate': 95,
-#                 'systolic_bp': 125,
-#                 'diastolic_bp': 80,
-#                 'temperature': 38.5,
-#                 'oxygen_sat': 97,
-#                 'pregnancy': 'No',
-#                 'mode_of_arrival': 'Walk-in',
-#                 'chief_complaint': 'Fever',
-#                 'AVPU_scale': 'Alert',
-#                 'Triage_Category': '2'
-#             }
-
-#     with col2:
-#         if st.button("💔 Chest Pain Scenario"):
-#             return {
-#                 'age': 58,
-#                 'sex': 'Male',
-#                 'active_bleeding': 'No',
-#                 'resp_rate': 22,
-#                 'heart_rate': 110,
-#                 'systolic_bp': 150,
-#                 'diastolic_bp': 95,
-#                 'temperature': 37.2,
-#                 'oxygen_sat': 95,
-#                 'pregnancy': 'No',
-#                 'mode_of_arrival': 'Ambulance',
-#                 'chief_complaint': 'Chest Pain',
-#                 'AVPU_scale': 'Alert',
-#                 'Triage_Category': '0'
-#             }
-
-#     with col3:
-#         if st.button("🩸 Injury Case"):
-#             return {
-#                 'age': 28,
-#                 'sex': 'Male',
-#                 'active_bleeding': 'Yes',
-#                 'resp_rate': 24,
-#                 'heart_rate': 125,
-#                 'systolic_bp': 90,
-#                 'diastolic_bp': 60,
-#                 'temperature': 36.8,
-#                 'oxygen_sat': 92,
-#                 'pregnancy': 'No',
-#                 'mode_of_arrival': 'Ambulance',
-#                 'chief_complaint': 'Injury',
-#                 'AVPU_scale': 'Voice',
-#                 'Triage_Category': '0'
-#             }

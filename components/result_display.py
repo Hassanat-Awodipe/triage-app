@@ -30,7 +30,6 @@ def render_prediction_results(prediction_result: Dict[str, Any], explanation_res
     # Main result display
     triage_level = prediction_result.get('triage_level', 0)
     category = prediction_result.get('category', 'Unknown')
-    # confidence = prediction_result.get('confidence', 0)
     color = prediction_result.get('color', '#gray')
     description = prediction_result.get('description', 'No description available')
 
@@ -62,7 +61,6 @@ def render_prediction_results(prediction_result: Dict[str, Any], explanation_res
 
         with col1:
             # Confidence scores chart
-            # if show_confidence and 'confidence_scores' in prediction_result:
             confidence_scores = prediction_result['confidence_scores']
             categories = ['Emergency', 'Urgent', 'Non-urgent']
             colors = ['#FF4B4B', '#FFD700', '#32CD32']
@@ -101,7 +99,7 @@ def render_prediction_results(prediction_result: Dict[str, Any], explanation_res
         for i, rec in enumerate(recommendations, 1):
             st.markdown(f"{i}. {rec}")
 
-    # put shap things here
+    # explain result
     st.markdown("##### Influence of Patient's Indicators on Triage Decision")
     # generate the plot
     explanation_fig, ax = plt.subplots(figsize=(10, 6))
@@ -117,12 +115,6 @@ def render_prediction_results(prediction_result: Dict[str, Any], explanation_res
         show=False
     )
     st.pyplot(explanation_fig, use_container_width=True)
-
-    # plt.title("Feature Contribution to Triage Category", fontsize=12, fontweight='bold')
-    # plt.tight_layout()
-
-    # Patient summary download
-    # st.subheader("📄 Patient Summary")
 
     summary = format_patient_summary(patient_data, prediction_result)
 
@@ -167,7 +159,7 @@ def _get_recommendations(triage_level: int, patient_data: Dict[str, Any]) -> lis
         1: [
             "⏰ **URGENT CARE NEEDED**",
             "Patient should be evaluated within 2 hours",
-            "Monitor vital signs every 30 minutes",
+            "Monitor vital signs every 20 minutes",
             "Provide comfort measures as needed"
         ],
         2: [

@@ -13,7 +13,7 @@ from utils import validate_inputs, export_results_to_csv
 
 # Page configuration
 st.set_page_config(
-    page_title="Medical Triage Classification System",
+    page_title="AI Medical Triage for RLS",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -55,7 +55,7 @@ def main():
         **Triage Categories:**
         - 🔴 **Emergency** (0): Immediate attention required
         - 🟡 **Urgent** (1): Treatment within 2 hours
-        - 🟢 **Non-urgent** (2): Treatment within 4 hours
+        - 🟢 **Non-urgent** (2): Treatment within 3 hours
         """)
 
         st.markdown("---")
@@ -171,12 +171,9 @@ def main():
                     st.error(f"Error during prediction: {str(e)}")
                     st.info("Please check your model configuration and try again.")
 
-            # explanation_fig = model.explain_prediction(patient_data)
-            # st.pyplot(explanation_fig, use_container_width=True)
-
         else:
             # Show placeholder when no prediction is made
-            st.info("👆 Complete the patient information form and click 'Classify Triage Level' to see results.")
+            st.info("Complete the patient information form and click 'Classify Triage Level' to see results.")
             feat_importance, importance_fig = model.get_feature_importance()
             st.write("### Influence of Clinical Indicators on the Model:")
             st.plotly_chart(importance_fig)

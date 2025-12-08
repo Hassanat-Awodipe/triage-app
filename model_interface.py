@@ -1,7 +1,7 @@
 """
 Medical Triage Model Interface
 
-This module provides the interface for integrating your existing triage classification model.
+This module provides the interface for integrating the existing triage classification model.
 """
 
 import numpy as np
@@ -22,9 +22,6 @@ import os
 class TriageModel:
     """
     Interface for the triage classification model.
-    
-    IMPORTANT: Replace this with your actual trained model.
-    This is a template that shows the expected interface.
     """
 
     def __init__(self):
@@ -37,7 +34,7 @@ class TriageModel:
         self.triage_categories = {
             0: {'name': 'Emergency', 'color': '#FF4B4B', 'description': 'Immediate attention required'},
             1: {'name': 'Urgent', 'color': '#FFD700', 'description': 'Treatment within 2 hours'},
-            2: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment within 4 hours'},
+            2: {'name': 'Non-urgent', 'color': '#32CD32', 'description': 'Treatment within 3 hours'},
         }
 
         # load model
@@ -45,7 +42,7 @@ class TriageModel:
 
     def load_model(self):
         """
-        Attempt to load your actual model from path.
+        Attempt to load the model from path.
 
         """
         path = 'best_triage_model.pkl'
@@ -69,7 +66,7 @@ class TriageModel:
 
     def _prepare_features(self, patient_data: Dict[str, Any]) -> pd.DataFrame:
         """
-        Convert patient data to model features compatible with best_triage_model.pkl.
+        Convert patient data to model features compatible with triage_model (2).pkl.
         
         Returns a DataFrame with numeric features and dummy-encoded categorical features.
         """
@@ -206,14 +203,11 @@ class TriageModel:
             # SHAP explainer
             explainer = shap.TreeExplainer(self.model)
             shap_values = explainer.shap_values(features_df)
-            # expected_list = explainer.expected_value.tolist()
-            # shap_list = [shap_values[..., i] for i in range(shap_values.shape[-1])]
 
-            # -labels for the legend
+            # labels for the legend
             class_labels_list = [
                 f"{['Emergency', 'Urgent', 'Non-urgent'][i]} ({probabilities[row_index, i].round(2):.2f})" for i
                 in self.model.classes_]
-            # highlight = [np.argmax(probabilities[row_index])]
 
             return {
                 'expected_list': explainer.expected_value.tolist(),
@@ -223,22 +217,6 @@ class TriageModel:
                 'class_labels_list': class_labels_list,
                 'highlight': [np.argmax(probabilities[row_index])]
             }
-            # # generate the plot
-            # explanation_fig, ax = plt.subplots(figsize=(10, 6))
-            # shap.multioutput_decision_plot(
-            #     expected_list,
-            #     shap_list,
-            #     row_index=row_index,
-            #     feature_names=self.model.feature_names_in_,
-            #     highlight=[np.argmax(probabilities[row_index])],
-            #     legend_labels=class_labels_list,
-            #     legend_location="lower right",
-            #     show=False
-            # )
-            #
-            # plt.title("Feature Contribution to Triage Category", fontsize=12, fontweight='bold')
-            # plt.tight_layout()
-            # return explanation_fig
 
         except Exception as e:
             raise Exception(f"Cannot Calculate Shap Value: {str(e)}")
